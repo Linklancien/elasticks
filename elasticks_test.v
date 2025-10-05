@@ -12,9 +12,9 @@ fn test_get_smd() {
 		material: rdm.Material.simple(re, e)
 	}
 
-	force := rdm.force{
-		point: vec3[f32](l, 0, 0)
-		f:     vec3[f32](0, 10, 0)
+	force := rdm.Force{
+		// point: vec3[f32](l, 0, 0)
+		// f:     vec3[f32](0, 10, 0)
 	}
 
 	smd := rdm.get_smd(stick, force)

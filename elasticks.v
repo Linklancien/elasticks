@@ -1,6 +1,6 @@
 module elasticks
 
-import math { pi, pow }
+import math { pow }
 import math.vec { vec3 }
 
 // A: Stick_type
@@ -11,8 +11,8 @@ import math.vec { vec3 }
 // b: Material
 pub struct Stick_type {
 pub:
-	lenght   f32
-	section  Sections
+	lenght   f64
+	section  Section
 	material Material
 }
 
@@ -20,22 +20,22 @@ pub:
 interface Section {
 	name string
 
-	i_g   f32
-	i_g_y f32
-	i_g_z f32
+	i_g   f64
+	i_g_y f64
+	i_g_z f64
 }
 
 pub struct Circular {
 	name string = 'Circular'
-	d    f32 // diameter
+	d    f64 // diameter
 
-	i_g   f32
-	i_g_y f32
-	i_g_z f32
+	i_g   f64
+	i_g_y f64
+	i_g_z f64
 }
 
-pub fn Circular.stick(d f32) Circular {
-	i_g := pi * pow(d, 4) / 32
+pub fn Circular.stick(d f64) Circular {
+	i_g := math.pi * pow(d, 4) / 32
 	i_g_a := i_g / 2
 
 	return Circular{
@@ -48,15 +48,15 @@ pub fn Circular.stick(d f32) Circular {
 
 pub struct Rectangular {
 	name string = 'Rectangular'
-	h    f32 // height along the Y axis
-	w    f32 // width along the Z axis
+	h    f64 // height along the Y axis
+	w    f64 // width along the Z axis
 
-	i_g   f32
-	i_g_y f32
-	i_g_z f32
+	i_g   f64
+	i_g_y f64
+	i_g_z f64
 }
 
-pub fn Rectangular.stick(h f32, w f32) Rectangular {
+pub fn Rectangular.stick(h f64, w f64) Rectangular {
 	// assume that h is the height along the Y axis and w the width along the Z axis
 	i_g_y := h * pow(w, 3) / 12
 	i_g_z := w * pow(h, 3) / 12
@@ -76,12 +76,12 @@ pub fn Rectangular.stick(h f32, w f32) Rectangular {
 // Homogeneity
 // Isotropic
 pub struct Material {
-	re f32 // MPa Elastic resistance
-	rg f32 // MPa Sliding resistance (around re/2)
-	e  f32 // Young modulus
+	re f64 // MPa Elastic resistance
+	rg f64 // MPa Sliding resistance (around re/2)
+	e  f64 // Young modulus
 }
 
-pub fn Material.simple(re f32, e f32) Material {
+pub fn Material.simple(re f64, e f64) Material {
 	return Material{
 		re: re
 		rg: re / 2
@@ -89,7 +89,7 @@ pub fn Material.simple(re f32, e f32) Material {
 	}
 }
 
-pub fn Material.adcanced(re f32, rg f32, e f32) Material {
+pub fn Material.adcanced(re f64, rg f64, e f64) Material {
 	return Material{
 		re: re
 		rg: rg
@@ -103,24 +103,24 @@ pub fn Material.adcanced(re f32, rg f32, e f32) Material {
 // c: Deplacements
 // d: Force
 
-pub type x_function = fn (x f32) f32
+pub type X_function = fn (x f64) f64
 
-fn x_zero(x f32) f32 {
+fn x_zero(x f64) f64 {
 	return 0
 }
 
-fn x_const(x f32, cst f32) f32 {
+fn x_const(x f64, cst f64) f64 {
 	return cst
 }
 
-fn (f1 x_function) + (f2 x_function) x_function {
+fn (f1 X_function) + (f2 X_function) X_function {
 	if f1 == x_zero {
 		return f2
 	}
 	if f2 == x_zero {
 		return f1
 	}
-	return fn [f1, f2] (x f32) f32 {
+	return fn [f1, f2] (x f64) f64 {
 		return f1(x) + f2(x)
 	}
 }
@@ -130,13 +130,13 @@ fn (f1 x_function) + (f2 x_function) x_function {
 // 2: moments
 pub struct Shear_and_moment_diagram {
 	// 1:
-	n  x_function = x_zero
-	ty x_function = x_zero
-	tz x_function = x_zero
+	n  X_function = x_zero
+	ty X_function = x_zero
+	tz X_function = x_zero
 	// 2:
-	mt  x_function = x_zero
-	mfy x_function = x_zero
-	mfz x_function = x_zero
+	mt  X_function = x_zero
+	mfy X_function = x_zero
+	mfz X_function = x_zero
 }
 
 fn (smd1 Shear_and_moment_diagram) + (smd2 Shear_and_moment_diagram) Shear_and_moment_diagram {
@@ -152,8 +152,8 @@ fn (smd1 Shear_and_moment_diagram) + (smd2 Shear_and_moment_diagram) Shear_and_m
 
 // b: Constraints
 pub struct Constraints {
-	sigma f32
-	taux  f32
+	sigma f64
+	taux  f64
 }
 
 fn (c1 Constraints) + (c2 Constraints) Constraints {
@@ -170,13 +170,13 @@ fn (c1 Constraints) + (c2 Constraints) Constraints {
 // 2: rotation
 pub struct Deplacements {
 	// 1:
-	ux x_function = x_zero
-	uy x_function = x_zero
-	uz x_function = x_zero
+	ux X_function = x_zero
+	uy X_function = x_zero
+	uz X_function = x_zero
 	// 2:
-	rx x_function = x_zero
-	ry x_function = x_zero
-	rz x_function = x_zero
+	rx X_function = x_zero
+	ry X_function = x_zero
+	rz X_function = x_zero
 }
 
 fn (d1 Deplacements) + (d2 Deplacements) Deplacements {
@@ -193,15 +193,15 @@ fn (d1 Deplacements) + (d2 Deplacements) Deplacements {
 // d: Force
 pub struct Force {
 pub:
-	point vec3[f32]
-	f     vec3[f32]
+	// point vec3[f64]
+	// f     vec3[f64]
 }
 
 pub fn solve_forces_solicitation(stick Stick_type, forces []Force) (Shear_and_moment_diagram, Constraints, Deplacements) {
 	mut total_smd := Shear_and_moment_diagram{}
 	mut total_constraints := Constraints{}
 	mut total_deplacements := Deplacements{}
-	for force in force {
+	for force in forces {
 		new_smd, new_constraints, new_deplacements := solve_one(stick, force)
 		total_smd += new_smd
 		total_constraints += new_constraints
@@ -219,28 +219,28 @@ fn solve_one(stick Stick_type, force Force) (Shear_and_moment_diagram, Constrain
 }
 
 pub fn get_smd(stick Stick_type, force Force) Shear_and_moment_diagram {
-	cstx := force.f.x
-	csty := force.f.y
-	cstz := force.f.z
+	// cstx := force.f.x
+	// csty := force.f.y
+	// cstz := force.f.z
 
 	// Hypothesis of a straight beam
 	smd := Shear_and_moment_diagram{
-		ux: fn [cstx] (x f32) f32 {
-			return x_const(x, cstx)
-		}
-		uy: fn [csty] (x f32) f32 {
-			return x_const(x, csty)
-		}
-		uz: fn [cstz] (x f32) f32 {
-			return x_const(x, cstz)
-		}
+		// ux: fn [cstx] (x f64) f64 {
+		// 	return x_const(x, cstx)
+		// }
+		// uy: fn [csty] (x f64) f64 {
+		// 	return x_const(x, csty)
+		// }
+		// uz: fn [cstz] (x f64) f64 {
+		// 	return x_const(x, cstz)
+		// }
 
-		mfy: fn [cstz] (x f32) f32 {
-			return x * cstz
-		}
-		mfz: fn [csty] (x f32) f32 {
-			return -x * csty
-		}
+		// mfy: fn [cstz] (x f64) f64 {
+		// 	return x * cstz
+		// }
+		// mfz: fn [csty] (x f64) f64 {
+		// 	return -x * csty
+		// }
 	}
 
 	return smd
