@@ -14,7 +14,7 @@ fn main() {
 	mut app := &App{}
 	app.ctx = gg.new_context(
 		fullscreen:    false
-		width:         100 * 8
+		width:         100 * 12
 		height:        100 * 6
 		create_window: true
 		window_title:  '-Elastick example-'
@@ -36,7 +36,7 @@ fn main() {
 
 	force := rdm.Force{
 		point: vec3[f32](app.l, 0, 0)
-		f:     vec3[f32](1, -10, 0)
+		f:     vec3[f32](1, -10, 1)
 	}
 
 	app.smd = rdm.get_smd(stick, force)
@@ -51,30 +51,72 @@ fn on_frame(mut app App) {
 }
 
 fn (app App) render_all_graph() {
-	dec := 5
-	x1 := dec
-	mut y1 := dec
+	dec := 50
+	mut x := dec
+	mut y := dec/2
 	w := 500
 	h := 100
 	nb := 2000
-	//
+	// left
+	// n
 	abscise := []f32{len: nb + 1, init: app.l * index / nb}
-	value := []f32{len: nb + 1, init: app.smd.mfz(app.l * index / nb)}
-
-	app.render_graph(x1, y1, w, h, abscise, value)
+	mut value := []f32{len: nb + 1, init: app.smd.n(app.l * index / nb)}
+	app.render_graph(x, y, w, h, abscise, value, 'n')
+	// ty
+	y += h + dec
+	value = []f32{len: nb + 1, init: app.smd.ty(app.l * index / nb)}
+	app.render_graph(x, y, w, h, abscise, value, 'ty')
+	// mfz
+	y += h + dec
+	value = []f32{len: nb + 1, init: app.smd.mfz(app.l * index / nb)}
+	app.render_graph(x, y, w, h, abscise, value, 'mfz')
+	// change side
+	x += w + dec
+	y = dec/2
+	// right
+	// mt
+	value = []f32{len: nb + 1, init: app.smd.mt(app.l * index / nb)}
+	app.render_graph(x, y, w, h, abscise, value, 'mt')
+	// tz
+	y += h + dec
+	value = []f32{len: nb + 1, init: app.smd.tz(app.l * index / nb)}
+	app.render_graph(x, y, w, h, abscise, value, 'tz')
+	// mft
+	y += h + dec
+	value = []f32{len: nb + 1, init: app.smd.mfy(app.l * index / nb)}
+	app.render_graph(x, y, w, h, abscise, value, 'mfy')
 }
 
-fn (app App) render_graph(x1 f32, y1 f32, w f32, h f32, abscise []f32, value []f32) {
-	mut max_y := max(value) or { panic('No max value') }
-	if max_y == 0.0 {
-		max_y = -min(value) or { panic('No min value') }
+fn (app App) render_graph(x f32, y f32, w f32, h f32, abscise []f32, value []f32, name string) {
+	max_value := max(value) or { panic('No max value') }
+	min_value := min(value) or { panic('No min value') }
+
+	croissance := value[value.len - 1] - value[0]
+	mut y0 := y
+	mut y1 := y
+	if croissance > 0 {
+		y0 += h
+	} else if croissance < 0 {
+		y1 += h
+	}
+
+	mut max_y := f32(max_value)
+	if max_value == min_value {
+		max_y = max_value
+	}
+	else if max_value > -min_value {
+		max_y = max_value
+	}
+	else if max_value < -min_value {
+		max_y = min_value
 	}
 	max_a := max(abscise) or { panic('No max abscise') }
-	println(max_a)
+
 	for k in 0 .. (abscise.len - 1) {
-		app.ctx.draw_line(x1 + w * abscise[k] / max_a, y1 - h * value[k] / max_y, x1 +
-			w * abscise[k + 1] / max_a, y1 - h * value[k + 1] / max_y, gg.red)
+		app.ctx.draw_line(x + w * abscise[k] / max_a, y1 + (y0 - y1) * value[k] / max_y,
+			x + w * abscise[k + 1] / max_a, y1 + (y0 - y1) * value[k + 1] / max_y, gg.red)
 	}
-	app.ctx.draw_text_def(int(x1), int(y1), '${value[0]}')
-	app.ctx.draw_text_def(int(x1 + w), int(y1 + h), '${value[abscise.len - 1]}')
+	app.ctx.draw_text_def(int(x), int(y0), '${value[0]}')
+	app.ctx.draw_text_def(int(x + w), int(y1), '${value[abscise.len - 1]}')
+	app.ctx.draw_text_def(int(x + w / 2), int(y + h), name)
 }
