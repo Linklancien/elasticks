@@ -1,5 +1,6 @@
 import linklancien.elasticks as rdm
 import math.vec { vec3 }
+import arrays { max, min }
 import gg
 
 struct App {
@@ -17,6 +18,7 @@ fn main() {
 		height:        100 * 6
 		create_window: true
 		window_title:  '-Elastick example-'
+		bg_color:      gg.gray
 		user_data:     app
 		frame_fn:      on_frame
 		sample_count:  4
@@ -34,7 +36,7 @@ fn main() {
 
 	force := rdm.Force{
 		point: vec3[f32](app.l, 0, 0)
-		f:     vec3[f32](0, -10, 0)
+		f:     vec3[f32](1, -10, 0)
 	}
 
 	app.smd = rdm.get_smd(stick, force)
@@ -44,16 +46,35 @@ fn main() {
 
 fn on_frame(mut app App) {
 	app.ctx.begin()
-	dec := 5
-	app.ctx.draw_rounded_rect_filled(0, 0, app.l + 2*dec, 100 + 2*dec, 5, gg.gray)
-	mut max_y := app.smd.mfz(app.l)
-	mut start := f32(100.0)
-	if max_y < 0{
-		max_y = -max_y
-		start = 0.0
-	}
-	for x in 0 .. int(app.l) {
-		app.ctx.draw_line(x + dec, dec + start - 100*app.smd.mfz(x)/max_y, x + 1 + dec, dec + start - 100*app.smd.mfz(x + 1)/max_y, gg.red)
-	}
+	app.render_all_graph()
 	app.ctx.end()
+}
+
+fn (app App) render_all_graph() {
+	dec := 5
+	x1 := dec
+	mut y1 := dec
+	w := 500
+	h := 100
+	nb := 2000
+	//
+	abscise := []f32{len: nb + 1, init: app.l * index / nb}
+	value := []f32{len: nb + 1, init: app.smd.mfz(app.l * index / nb)}
+
+	app.render_graph(x1, y1, w, h, abscise, value)
+}
+
+fn (app App) render_graph(x1 f32, y1 f32, w f32, h f32, abscise []f32, value []f32) {
+	mut max_y := max(value) or { panic('No max value') }
+	if max_y == 0.0 {
+		max_y = -min(value) or { panic('No min value') }
+	}
+	max_a := max(abscise) or { panic('No max abscise') }
+	println(max_a)
+	for k in 0 .. (abscise.len - 1) {
+		app.ctx.draw_line(x1 + w * abscise[k] / max_a, y1 - h * value[k] / max_y, x1 +
+			w * abscise[k + 1] / max_a, y1 - h * value[k + 1] / max_y, gg.red)
+	}
+	app.ctx.draw_text_def(int(x1), int(y1), '${value[0]}')
+	app.ctx.draw_text_def(int(x1 + w), int(y1 + h), '${value[abscise.len - 1]}')
 }
