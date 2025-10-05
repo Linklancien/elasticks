@@ -1,5 +1,5 @@
 import elasticks as rdm
-import math.vec {vec3}
+import math.vec { vec3 }
 
 fn test_get_smd() {
 	l := 2_000
@@ -13,10 +13,11 @@ fn test_get_smd() {
 	}
 
 	force := rdm.Force{
-		// point: vec3[f32](l, 0, 0)
-		// f:     vec3[f32](0, 10, 0)
+		point: vec3[f32](l, 0, 0)
+		f:     vec3[f32](0, 10, 0)
 	}
 
 	smd := rdm.get_smd(stick, force)
 	print(smd)
+	assert 1 == 0
 }
