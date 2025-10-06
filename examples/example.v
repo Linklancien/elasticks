@@ -34,12 +34,16 @@ fn main() {
 		material: rdm.Material.simple(re, e)
 	}
 
-	force := rdm.Force{
+	force1 := rdm.Force{
+		point: vec3[f32](app.l/2, 0, 0)
+		f:     vec3[f32](10, 0, 0)
+	}
+	force2 := rdm.Force{
 		point: vec3[f32](app.l, 0, 0)
-		f:     vec3[f32](1, -10, -1)
+		f:     vec3[f32](0, -10, -1)
 	}
 
-	app.smd = rdm.get_smd(stick, force)
+	app.smd, _, _= rdm.solve_forces_solicitation(stick, [force1, force2])
 	// print(app.smd)
 	app.ctx.run()
 }

@@ -227,21 +227,36 @@ pub fn get_smd(stick Stick_type, force Force) Shear_and_moment_diagram {
 
 	// Hypothesis of a straight beam
 	smd := Shear_and_moment_diagram{
-		n:  fn [cstx] (x f32) f32 {
-			return x_const(x, cstx)
+		n:  fn [cstx, pos_x] (x f32) f32 {
+			if x >= 0 && x <= pos_x{
+				return x_const(x, cstx)
+			}
+			return 0
 		}
-		ty: fn [csty] (x f32) f32 {
-			return x_const(x, csty)
+		ty: fn [csty, pos_x] (x f32) f32 {
+			if x >= 0 && x <= pos_x{
+				return x_const(x, csty)
+			}
+			return 0
 		}
-		tz: fn [cstz] (x f32) f32 {
-			return x_const(x, cstz)
+		tz: fn [cstz, pos_x] (x f32) f32 {
+			if x >= 0 && x <= pos_x{
+				return x_const(x, cstz)
+			}
+			return 0
 		}
 
 		mfy: fn [cstz, pos_x] (x f32) f32 {
-			return (x - pos_x) * cstz
+			if x >= 0 && x <= pos_x{
+				return (x - pos_x) * cstz
+			}
+			return 0
 		}
 		mfz: fn [csty, pos_x] (x f32) f32 {
-			return (pos_x - x) * csty
+			if x >= 0 && x <= pos_x{
+				return (pos_x - x) * csty
+			}
+			return 0
 		}
 	}
 
