@@ -108,8 +108,11 @@ pub struct Polynomials {
 	restricted_terms [][]f32
 }
 
-// 
+//
 fn (pol Polynomials) get_interval(x f32) int {
+	if pol.restriction.len == 0{
+		return 0
+	}
 	for k in 0 .. pol.restriction.len - 1 {
 		if pol.restriction[k] <= x && x < pol.restriction[k] {
 			return k
@@ -117,43 +120,47 @@ fn (pol Polynomials) get_interval(x f32) int {
 	}
 	return -1
 }
-union_
+
 fn union_interval(p1 Polynomials, p2 Polynomials) []f32 {
+	if p1.restriction == [] && p2.restriction == []{
+		return []f32{}
+	}
+	else if p1.restriction == []{
+		return p2.restriction
+	}
+	else if p2.restriction == []{
+		return p1.restriction
+	}
 	mut restriction := []f32{}
 	mut id1 := 0
 	mut id2 := 0
-	len1 :=  p1.restriction.len - 1
-	len2 :=  p2.restriction.len - 1
-	for id1 != len1 && id2 != len2{
-		if id1 == len1{
+	len1 := p1.restriction.len - 1
+	len2 := p2.restriction.len - 1
+	for id1 != len1 && id2 != len2 {
+		if id1 == len1 {
 			restriction << p2.restriction[id2]
 			id2 += 1
-		}
-		else if id2 == len2{
+		} else if id2 == len2 {
 			restriction << p1.restriction[id1]
 			id1 += 1
-		}
-		else if p1.restriction[id1] == p2.restriction[id2]{
+		} else if p1.restriction[id1] == p2.restriction[id2] {
 			restriction << p1.restriction[id1]
 			id1 += 1
 			id2 += 1
-		}
-		else if p1.restriction[id1] > p2.restriction[id2]{
+		} else if p1.restriction[id1] > p2.restriction[id2] {
 			restriction << p2.restriction[id2]
 			id2 += 1
-		}
-		else if p1.restriction[id1] < p2.restriction[id2]{
+		} else if p1.restriction[id1] < p2.restriction[id2] {
 			restriction << p1.restriction[id1]
 			id1 += 1
-		}
-		else{
+		} else {
 			panic('Case not handle: ${id1}: ${p1.restriction[id1]} & ${id2}: ${p2.restriction[id2]}')
 		}
 	}
 	return restriction
 }
 
-// 
+//
 pub fn (pol Polynomials) value(x f32) f32 {
 	interval := pol.get_interval(x)
 	if interval == -1 {
@@ -187,9 +194,9 @@ fn (pol Polynomials) derivate(x f32) Polynomials {
 	mut restricted_terms := [][]f32{}
 	for id, terms in pol.restricted_terms {
 		mut new_terms := []f32{len: 1, init: 0}
-		for i, term in pol.terms {
+		for i, term in terms {
 			if i > 0 {
-				terms << term * i
+				new_terms << term * i
 			}
 		}
 		restricted_terms[id] << new_terms
@@ -202,17 +209,60 @@ fn (pol Polynomials) derivate(x f32) Polynomials {
 }
 
 fn add(p1 Polynomials, p2 Polynomials) Polynomials {
-	mut restricted_terms := [][]f32{}
+	
 	restriction := union_interval(p1, p2)
 
-	for k in 0..restriction.len - 1{
-		for 
-	}
-	
 	return Polynomials{
 		restriction:      restriction
 		restricted_terms: restricted_terms
 	}
+}
+
+fn easy_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32{
+	mut restricted_terms := [][]f32{}
+	if restriction == []{
+		terms := p1.restricted_terms[0].clone()
+		for id_term, term in p2.restricted_terms[0]{
+			if id_term >= terms.len {
+				terms << term
+			} else {
+				terms[k] += term
+			}
+		}
+		restricted_terms << terms
+	}
+	else if restriction == p1.restriction {
+		for 
+
+	}
+	else if restriction == p2.restriction {
+		
+	}
+	return restricted_terms
+}
+
+fn complex_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32{
+	mut restricted_terms := [][]f32{}
+
+	for k in 0 .. restriction.len - 1 {
+		mut terms := []f32{}
+		id1 := p1.get_interval(restriction[k])
+		for term in p1.restricted_terms[id1] {
+			terms << term
+		}
+
+		id2 := p2.get_interval(restriction[k])
+		for id_term, term in p2.restricted_terms[id2] {
+			if id_term >= terms.len {
+				terms << term
+			} else {
+				terms[id_term] += term
+			}
+		}
+
+		restricted_terms << terms
+	}
+	return restricted_terms
 }
 
 // a:
@@ -319,24 +369,23 @@ pub fn get_smd(stick Stick_type, force Force) Shear_and_moment_diagram {
 
 	// Hypothesis of a straight beam
 	smd := Shear_and_moment_diagram{
-		n:  Polynomials{
-			terms: [cstx]
-		}
-		ty: Polynomials{
-			terms: [csty]
-		}
-		tz: Polynomials{
-			terms: [cstz]
-		}
+	// 	n:  Polynomials{
+	// 		terms: [cstx]
+	// 	}
+	// 	ty: Polynomials{
+	// 		terms: [csty]
+	// 	}
+	// 	tz: Polynomials{
+	// 		terms: [cstz]
+	// 	}
 
-		mfy: Polynomials{
-			terms: [-pos_x * cstz, cstz]
-		}
-		mfz: Polynomials{
-			terms: [pos_x * cstz, -cstz]
-		}
+	// 	mfy: Polynomials{
+	// 		terms: [-pos_x * cstz, cstz]
+	// 	}
+	// 	mfz: Polynomials{
+	// 		terms: [pos_x * cstz, -cstz]
+	// 	}
 	}
-	println(smd)
 
 	return smd
 }
