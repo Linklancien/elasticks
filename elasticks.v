@@ -108,17 +108,54 @@ pub struct Polynomials {
 	restricted_terms [][]f32
 }
 
-fn (pol Polynomials) interval(x f32) int {
+// 
+fn (pol Polynomials) get_interval(x f32) int {
 	for k in 0 .. pol.restriction.len - 1 {
-		if pol.restriction[k] <= x && x <= pol.restriction[k] {
+		if pol.restriction[k] <= x && x < pol.restriction[k] {
 			return k
 		}
 	}
 	return -1
 }
+union_
+fn union_interval(p1 Polynomials, p2 Polynomials) []f32 {
+	mut restriction := []f32{}
+	mut id1 := 0
+	mut id2 := 0
+	len1 :=  p1.restriction.len - 1
+	len2 :=  p2.restriction.len - 1
+	for id1 != len1 && id2 != len2{
+		if id1 == len1{
+			restriction << p2.restriction[id2]
+			id2 += 1
+		}
+		else if id2 == len2{
+			restriction << p1.restriction[id1]
+			id1 += 1
+		}
+		else if p1.restriction[id1] == p2.restriction[id2]{
+			restriction << p1.restriction[id1]
+			id1 += 1
+			id2 += 1
+		}
+		else if p1.restriction[id1] > p2.restriction[id2]{
+			restriction << p2.restriction[id2]
+			id2 += 1
+		}
+		else if p1.restriction[id1] < p2.restriction[id2]{
+			restriction << p1.restriction[id1]
+			id1 += 1
+		}
+		else{
+			panic('Case not handle: ${id1}: ${p1.restriction[id1]} & ${id2}: ${p2.restriction[id2]}')
+		}
+	}
+	return restriction
+}
 
+// 
 pub fn (pol Polynomials) value(x f32) f32 {
-	interval := pol.interval(x)
+	interval := pol.get_interval(x)
 	if interval == -1 {
 		return 0
 	}
@@ -131,7 +168,7 @@ pub fn (pol Polynomials) value(x f32) f32 {
 }
 
 fn (pol Polynomials) integrate(x f32) Polynomials {
-	restricted_terms := [][]f32{}
+	mut restricted_terms := [][]f32{}
 	for id, terms in pol.restricted_terms {
 		mut new_terms := []f32{len: 1, init: 0}
 		for i, term in terms {
@@ -147,7 +184,7 @@ fn (pol Polynomials) integrate(x f32) Polynomials {
 }
 
 fn (pol Polynomials) derivate(x f32) Polynomials {
-	restricted_terms := [][]f32{}
+	mut restricted_terms := [][]f32{}
 	for id, terms in pol.restricted_terms {
 		mut new_terms := []f32{len: 1, init: 0}
 		for i, term in pol.terms {
@@ -165,20 +202,16 @@ fn (pol Polynomials) derivate(x f32) Polynomials {
 }
 
 fn add(p1 Polynomials, p2 Polynomials) Polynomials {
-	mut terms := []f32{}
-	for term in p1.terms {
-		terms << term
-	}
+	mut restricted_terms := [][]f32{}
+	restriction := union_interval(p1, p2)
 
-	for i, term in p1.terms {
-		if i < terms.len {
-			terms[i] += term
-		} else {
-			terms << term
-		}
+	for k in 0..restriction.len - 1{
+		for 
 	}
+	
 	return Polynomials{
-		terms: terms
+		restriction:      restriction
+		restricted_terms: restricted_terms
 	}
 }
 
