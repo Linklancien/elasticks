@@ -104,17 +104,14 @@ pub fn Material.adcanced(re f32, rg f32, e f32) Material {
 // d: Force
 
 pub struct Polynomials {
-	restriction      []f32
+	restriction      []f32 = [f32(0.0), 0]
 	restricted_terms [][]f32
 }
 
 //
 fn (pol Polynomials) get_interval(x f32) int {
-	if pol.restriction.len == 0{
-		return 0
-	}
 	for k in 0 .. pol.restriction.len - 1 {
-		if pol.restriction[k] <= x && x < pol.restriction[k] {
+		if pol.restriction[k] <= x && x < pol.restriction[k + 1] {
 			return k
 		}
 	}
@@ -122,20 +119,11 @@ fn (pol Polynomials) get_interval(x f32) int {
 }
 
 fn union_interval(p1 Polynomials, p2 Polynomials) []f32 {
-	if p1.restriction == [] && p2.restriction == []{
-		return []f32{}
-	}
-	else if p1.restriction == []{
-		return p2.restriction
-	}
-	else if p2.restriction == []{
-		return p1.restriction
-	}
 	mut restriction := []f32{}
 	mut id1 := 0
 	mut id2 := 0
-	len1 := p1.restriction.len - 1
-	len2 := p2.restriction.len - 1
+	len1 := p1.restriction.len
+	len2 := p2.restriction.len
 	for id1 != len1 && id2 != len2 {
 		if id1 == len1 {
 			restriction << p2.restriction[id2]
@@ -209,8 +197,9 @@ fn (pol Polynomials) derivate(x f32) Polynomials {
 }
 
 fn add(p1 Polynomials, p2 Polynomials) Polynomials {
-	
 	restriction := union_interval(p1, p2)
+
+	restricted_terms := complex_add(p1, p2, restriction)
 
 	return Polynomials{
 		restriction:      restriction
@@ -218,45 +207,29 @@ fn add(p1 Polynomials, p2 Polynomials) Polynomials {
 	}
 }
 
-fn easy_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32{
-	mut restricted_terms := [][]f32{}
-	if restriction == []{
-		terms := p1.restricted_terms[0].clone()
-		for id_term, term in p2.restricted_terms[0]{
-			if id_term >= terms.len {
-				terms << term
-			} else {
-				terms[k] += term
-			}
-		}
-		restricted_terms << terms
-	}
-	else if restriction == p1.restriction {
-		for 
-
-	}
-	else if restriction == p2.restriction {
-		
-	}
-	return restricted_terms
-}
-
-fn complex_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32{
+fn complex_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32 {
 	mut restricted_terms := [][]f32{}
 
 	for k in 0 .. restriction.len - 1 {
 		mut terms := []f32{}
 		id1 := p1.get_interval(restriction[k])
-		for term in p1.restricted_terms[id1] {
-			terms << term
+		// println(restriction[k])
+		// println(id1)
+		// println(p1)
+		if id1 != -1 {
+			for term in p1.restricted_terms[id1] {
+				terms << term
+			}
 		}
 
 		id2 := p2.get_interval(restriction[k])
-		for id_term, term in p2.restricted_terms[id2] {
-			if id_term >= terms.len {
-				terms << term
-			} else {
-				terms[id_term] += term
+		if id2 != -1 {
+			for id_term, term in p2.restricted_terms[id2] {
+				if id_term >= terms.len {
+					terms << term
+				} else {
+					terms[id_term] += term
+				}
 			}
 		}
 
@@ -369,22 +342,21 @@ pub fn get_smd(stick Stick_type, force Force) Shear_and_moment_diagram {
 
 	// Hypothesis of a straight beam
 	smd := Shear_and_moment_diagram{
-	// 	n:  Polynomials{
-	// 		terms: [cstx]
-	// 	}
-	// 	ty: Polynomials{
-	// 		terms: [csty]
-	// 	}
-	// 	tz: Polynomials{
-	// 		terms: [cstz]
-	// 	}
-
-	// 	mfy: Polynomials{
-	// 		terms: [-pos_x * cstz, cstz]
-	// 	}
-	// 	mfz: Polynomials{
-	// 		terms: [pos_x * cstz, -cstz]
-	// 	}
+		// 	n:  Polynomials{
+		// 		terms: [cstx]
+		// 	}
+		// 	ty: Polynomials{
+		// 		terms: [csty]
+		// 	}
+		// 	tz: Polynomials{
+		// 		terms: [cstz]
+		// 	}
+		// 	mfy: Polynomials{
+		// 		terms: [-pos_x * cstz, cstz]
+		// 	}
+		// 	mfz: Polynomials{
+		// 		terms: [pos_x * cstz, -cstz]
+		// 	}
 	}
 
 	return smd
