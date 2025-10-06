@@ -35,7 +35,7 @@ fn main() {
 	}
 
 	force1 := rdm.Force{
-		point: vec3[f32](app.l/2, 0, 0)
+		point: vec3[f32](app.l / 2, 0, 0)
 		f:     vec3[f32](10, 0, 0)
 	}
 	force2 := rdm.Force{
@@ -43,7 +43,7 @@ fn main() {
 		f:     vec3[f32](0, -10, -1)
 	}
 
-	app.smd, _, _= rdm.solve_forces_solicitation(stick, [force1, force2])
+	app.smd, _, _ = rdm.solve_forces_solicitation(stick, [force1, force2])
 	// print(app.smd)
 	app.ctx.run()
 }
@@ -57,37 +57,37 @@ fn on_frame(mut app App) {
 fn (app App) render_all_graph() {
 	dec := 50
 	mut x := dec
-	mut y := dec/2
+	mut y := dec / 2
 	w := 500
 	h := 100
 	nb := 2000
 	// left
 	// n
 	abscise := []f32{len: nb + 1, init: app.l * index / nb}
-	mut value := []f32{len: nb + 1, init: app.smd.n(app.l * index / nb)}
+	mut value := []f32{len: nb + 1, init: app.smd.n.value(app.l * index / nb)}
 	app.render_graph(x, y, w, h, abscise, value, 'n en MPa')
 	// ty
 	y += h + dec
-	value = []f32{len: nb + 1, init: app.smd.ty(app.l * index / nb)}
+	value = []f32{len: nb + 1, init: app.smd.ty.value(app.l * index / nb)}
 	app.render_graph(x, y, w, h, abscise, value, 'ty en MPa')
 	// mfz
 	y += h + dec
-	value = []f32{len: nb + 1, init: app.smd.mfz(app.l * index / nb)}
+	value = []f32{len: nb + 1, init: app.smd.mfz.value(app.l * index / nb)}
 	app.render_graph(x, y, w, h, abscise, value, 'mfz en MPa')
 	// change side
 	x += w + dec
-	y = dec/2
+	y = dec / 2
 	// right
 	// mt
-	value = []f32{len: nb + 1, init: app.smd.mt(app.l * index / nb)}
+	value = []f32{len: nb + 1, init: app.smd.mt.value(app.l * index / nb)}
 	app.render_graph(x, y, w, h, abscise, value, 'mt en MPa')
 	// tz
 	y += h + dec
-	value = []f32{len: nb + 1, init: app.smd.tz(app.l * index / nb)}
+	value = []f32{len: nb + 1, init: app.smd.tz.value(app.l * index / nb)}
 	app.render_graph(x, y, w, h, abscise, value, 'tz en MPa')
 	// mft
 	y += h + dec
-	value = []f32{len: nb + 1, init: app.smd.mfy(app.l * index / nb)}
+	value = []f32{len: nb + 1, init: app.smd.mfy.value(app.l * index / nb)}
 	app.render_graph(x, y, w, h, abscise, value, 'mfy en MPa')
 }
 
@@ -107,11 +107,9 @@ fn (app App) render_graph(x f32, y f32, w f32, h f32, abscise []f32, value []f32
 	mut max_y := f32(max_value)
 	if max_value == min_value {
 		max_y = max_value
-	}
-	else if max_value > -min_value {
+	} else if max_value > -min_value {
 		max_y = max_value
-	}
-	else if max_value < -min_value {
+	} else if max_value < -min_value {
 		max_y = min_value
 	}
 	max_a := max(abscise) or { panic('No max abscise') }

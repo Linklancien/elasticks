@@ -103,25 +103,82 @@ pub fn Material.adcanced(re f32, rg f32, e f32) Material {
 // c: Deplacements
 // d: Force
 
-pub type X_function = fn (x f32) f32
-
-fn x_zero(x f32) f32 {
-	return 0
+pub struct Polynomials {
+	restriction      []f32
+	restricted_terms [][]f32
 }
 
-fn x_const(x f32, cst f32) f32 {
-	return cst
+fn (pol Polynomials) interval(x f32) int {
+	for k in 0 .. pol.restriction.len - 1 {
+		if pol.restriction[k] <= x && x <= pol.restriction[k] {
+			return k
+		}
+	}
+	return -1
 }
 
-fn add(f1 X_function, f2 X_function) X_function {
-	if f1 == x_zero {
-		return f2
+pub fn (pol Polynomials) value(x f32) f32 {
+	interval := pol.interval(x)
+	if interval == -1 {
+		return 0
 	}
-	if f2 == x_zero {
-		return f1
+
+	mut r := f32(0.0)
+	for i, term in pol.restricted_terms[interval] {
+		r += f32(term * pow(x, i))
 	}
-	return fn [f1, f2] (x f32) f32 {
-		return f1(x) + f2(x)
+	return r
+}
+
+fn (pol Polynomials) integrate(x f32) Polynomials {
+	restricted_terms := [][]f32{}
+	for id, terms in pol.restricted_terms {
+		mut new_terms := []f32{len: 1, init: 0}
+		for i, term in terms {
+			new_terms << term / i
+		}
+		restricted_terms[id] << new_terms
+	}
+
+	return Polynomials{
+		restriction:      pol.restriction
+		restricted_terms: restricted_terms
+	}
+}
+
+fn (pol Polynomials) derivate(x f32) Polynomials {
+	restricted_terms := [][]f32{}
+	for id, terms in pol.restricted_terms {
+		mut new_terms := []f32{len: 1, init: 0}
+		for i, term in pol.terms {
+			if i > 0 {
+				terms << term * i
+			}
+		}
+		restricted_terms[id] << new_terms
+	}
+
+	return Polynomials{
+		restriction:      pol.restriction
+		restricted_terms: restricted_terms
+	}
+}
+
+fn add(p1 Polynomials, p2 Polynomials) Polynomials {
+	mut terms := []f32{}
+	for term in p1.terms {
+		terms << term
+	}
+
+	for i, term in p1.terms {
+		if i < terms.len {
+			terms[i] += term
+		} else {
+			terms << term
+		}
+	}
+	return Polynomials{
+		terms: terms
 	}
 }
 
@@ -129,14 +186,15 @@ fn add(f1 X_function, f2 X_function) X_function {
 // 1: shears
 // 2: moments
 pub struct Shear_and_moment_diagram {
+pub:
 	// 1:
-	n  X_function = x_zero
-	ty X_function = x_zero
-	tz X_function = x_zero
+	n  Polynomials
+	ty Polynomials
+	tz Polynomials
 	// 2:
-	mt  X_function = x_zero
-	mfy X_function = x_zero
-	mfz X_function = x_zero
+	mt  Polynomials
+	mfy Polynomials
+	mfz Polynomials
 }
 
 fn (smd1 Shear_and_moment_diagram) + (smd2 Shear_and_moment_diagram) Shear_and_moment_diagram {
@@ -169,14 +227,15 @@ fn (c1 Constraints) + (c2 Constraints) Constraints {
 // 1: translations
 // 2: rotation
 pub struct Deplacements {
+pub:
 	// 1:
-	ux X_function = x_zero
-	uy X_function = x_zero
-	uz X_function = x_zero
+	ux Polynomials
+	uy Polynomials
+	uz Polynomials
 	// 2:
-	rx X_function = x_zero
-	ry X_function = x_zero
-	rz X_function = x_zero
+	rx Polynomials
+	ry Polynomials
+	rz Polynomials
 }
 
 fn (d1 Deplacements) + (d2 Deplacements) Deplacements {
@@ -227,38 +286,24 @@ pub fn get_smd(stick Stick_type, force Force) Shear_and_moment_diagram {
 
 	// Hypothesis of a straight beam
 	smd := Shear_and_moment_diagram{
-		n:  fn [cstx, pos_x] (x f32) f32 {
-			if x >= 0 && x <= pos_x{
-				return x_const(x, cstx)
-			}
-			return 0
+		n:  Polynomials{
+			terms: [cstx]
 		}
-		ty: fn [csty, pos_x] (x f32) f32 {
-			if x >= 0 && x <= pos_x{
-				return x_const(x, csty)
-			}
-			return 0
+		ty: Polynomials{
+			terms: [csty]
 		}
-		tz: fn [cstz, pos_x] (x f32) f32 {
-			if x >= 0 && x <= pos_x{
-				return x_const(x, cstz)
-			}
-			return 0
+		tz: Polynomials{
+			terms: [cstz]
 		}
 
-		mfy: fn [cstz, pos_x] (x f32) f32 {
-			if x >= 0 && x <= pos_x{
-				return (x - pos_x) * cstz
-			}
-			return 0
+		mfy: Polynomials{
+			terms: [-pos_x * cstz, cstz]
 		}
-		mfz: fn [csty, pos_x] (x f32) f32 {
-			if x >= 0 && x <= pos_x{
-				return (pos_x - x) * csty
-			}
-			return 0
+		mfz: Polynomials{
+			terms: [pos_x * cstz, -cstz]
 		}
 	}
+	println(smd)
 
 	return smd
 }
