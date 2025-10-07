@@ -100,6 +100,7 @@ fn render_all_graph(ctx gg.Context, sdm rdm.Shear_and_moment_diagram, mvt rdm.De
 	y += h + dec
 	value = []f32{len: nb + 1, init: mvt.uz.value(l * index / nb)}
 	render_graph(ctx, x, y, w, h, abscise, value, 'uz en MPa')
+
 }
 
 fn render_graph(ctx gg.Context, x f32, y f32, w f32, h f32, abscise []f32, value []f32, name string) {
@@ -124,7 +125,7 @@ fn render_graph(ctx gg.Context, x f32, y f32, w f32, h f32, abscise []f32, value
 		max_y = min_value
 	}
 	max_a := max(abscise) or { panic('No max abscise') }
-
+	
 	ctx.draw_rounded_rect_filled(x - 10, y - 10, w + 35, h + 35, 5, gg.dark_gray)
 	for k in 0 .. (abscise.len - 1) {
 		ctx.draw_line(x + w * abscise[k] / max_a, y1 + (y0 - y1) * value[k] / max_y, x +
