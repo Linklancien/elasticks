@@ -104,34 +104,20 @@ fn render_all_graph(ctx gg.Context, sdm rdm.Shear_and_moment_diagram, mvt rdm.De
 }
 
 fn render_graph(ctx gg.Context, x f32, y f32, w f32, h f32, abscise []f32, value []f32, name string) {
-	max_value := max(value) or { panic('No max value') }
-	min_value := min(value) or { panic('No min value') }
-
-	croissance := value[value.len - 1] - value[0]
-	mut y0 := y
-	mut y1 := y
-	if croissance > 0 {
-		y0 += h
-	} else if croissance < 0 {
-		y1 += h
-	}
-
-	mut max_y := f32(max_value)
-	if max_value == min_value {
-		max_y = max_value
-	} else if max_value > -min_value {
-		max_y = max_value
-	} else if max_value < -min_value {
-		max_y = min_value
-	}
+	max := max(value) or { panic('No max value') }
+	min := min(value) or { panic('No min value') }
 	max_a := max(abscise) or { panic('No max abscise') }
+
+	f := fn [max, min, y, h](value f32) f32{
+		return y + h - h*(value - min)/(max - min)
+	}
 	
 	ctx.draw_rounded_rect_filled(x - 10, y - 10, w + 35, h + 35, 5, gg.dark_gray)
 	for k in 0 .. (abscise.len - 1) {
-		ctx.draw_line(x + w * abscise[k] / max_a, y1 + (y0 - y1) * value[k] / max_y, x +
-			w * abscise[k + 1] / max_a, y1 + (y0 - y1) * value[k + 1] / max_y, gg.red)
+		ctx.draw_line(x + w * abscise[k] / max_a, f(value[k]), x +
+			w * abscise[k + 1] / max_a, f(value[k + 1]), gg.red)
 	}
-	ctx.draw_text_def(int(x), int(y0), '${value[0]}')
-	ctx.draw_text_def(int(x + w), int(y1), '${value[abscise.len - 1]}')
+	ctx.draw_text_def(int(x), int(f(value[0])), '${value[0]}')
+	ctx.draw_text_def(int(x + w), int(f(value[abscise.len - 1])), '${value[abscise.len - 1]}')
 	ctx.draw_text_def(int(x + w / 2), int(y + h), name)
 }
