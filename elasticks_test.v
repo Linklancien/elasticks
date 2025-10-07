@@ -29,7 +29,7 @@ fn test_polynomials_add() {
 		restriction:      [f32(5), 10]
 		restricted_terms: [[f32(2), 1]]
 	}
-
+	println('Complex')
 	sum34 := add(p3, p4)
 	sum43 := add(p4, p3)
 	assert sum34 == sum43, 'complex sum is not reversible ${sum34}, ${sum43}'

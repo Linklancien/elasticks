@@ -20,6 +20,8 @@ pub:
 interface Section {
 	name string
 
+	surface f32
+
 	i_g   f32
 	i_g_y f32
 	i_g_z f32
@@ -28,6 +30,8 @@ interface Section {
 pub struct Circular {
 	name string = 'Circular'
 	d    f32 // diameter
+
+	surface f32
 
 	i_g   f32
 	i_g_y f32
@@ -39,10 +43,11 @@ pub fn Circular.stick(d f32) Circular {
 	i_g_a := i_g / 2
 
 	return Circular{
-		d:     d
-		i_g:   i_g
-		i_g_y: i_g_a
-		i_g_z: i_g_a
+		d:       d
+		surface: f32(math.pi * pow(d / 2, 2))
+		i_g:     i_g
+		i_g_y:   i_g_a
+		i_g_z:   i_g_a
 	}
 }
 
@@ -50,6 +55,8 @@ pub struct Rectangular {
 	name string = 'Rectangular'
 	h    f32 // height along the Y axis
 	w    f32 // width along the Z axis
+
+	surface f32
 
 	i_g   f32
 	i_g_y f32
@@ -62,10 +69,11 @@ pub fn Rectangular.stick(h f32, w f32) Rectangular {
 	i_g_z := f32(w * pow(h, 3) / 12)
 
 	return Rectangular{
-		h:     h
-		w:     w
-		i_g_y: i_g_y
-		i_g_z: i_g_z
+		h:       h
+		w:       w
+		surface: h * w
+		i_g_y:   i_g_y
+		i_g_z:   i_g_z
 	}
 }
 
@@ -124,7 +132,7 @@ fn union_interval(p1 Polynomials, p2 Polynomials) []f32 {
 	mut id2 := 0
 	len1 := p1.restriction.len
 	len2 := p2.restriction.len
-	for id1 != len1 && id2 != len2 {
+	for id1 != len1 || id2 != len2 {
 		if id1 == len1 {
 			restriction << p2.restriction[id2]
 			id2 += 1
@@ -132,19 +140,35 @@ fn union_interval(p1 Polynomials, p2 Polynomials) []f32 {
 			restriction << p1.restriction[id1]
 			id1 += 1
 		} else if p1.restriction[id1] == p2.restriction[id2] {
-			restriction << p1.restriction[id1]
+			if restriction.len == 0 {
+				restriction << p1.restriction[id1]
+			} else if restriction[restriction.len - 1] != p1.restriction[id1] {
+				restriction << p1.restriction[id1]
+			}
 			id1 += 1
 			id2 += 1
 		} else if p1.restriction[id1] > p2.restriction[id2] {
-			restriction << p2.restriction[id2]
+			if restriction.len == 0 {
+				restriction << p2.restriction[id2]
+			} else if restriction[restriction.len - 1] != p2.restriction[id2] {
+				restriction << p2.restriction[id2]
+			}
 			id2 += 1
 		} else if p1.restriction[id1] < p2.restriction[id2] {
-			restriction << p1.restriction[id1]
+			if restriction.len == 0 {
+				restriction << p1.restriction[id1]
+			} else if restriction[restriction.len - 1] != p1.restriction[id1] {
+				restriction << p1.restriction[id1]
+			}
 			id1 += 1
 		} else {
 			panic('Case not handle: ${id1}: ${p1.restriction[id1]} & ${id2}: ${p2.restriction[id2]}')
 		}
+		// debug:
+		// println('$id1/$len1, $id2/$len2 :$restriction ${id1 != len1 || id2 != len2}')
 	}
+	// println('END:')
+	// println(restriction)
 	return restriction
 }
 
@@ -162,16 +186,21 @@ pub fn (pol Polynomials) value(x f32) f32 {
 	return r
 }
 
-fn (pol Polynomials) integrate(x f32) Polynomials {
-	mut restricted_terms := [][]f32{}
+fn (pol Polynomials) integrate(cst f32) Polynomials {
+	mut restricted_terms := [][]f32{len: pol.restricted_terms.len, init: []f32{}}
 	for id, terms in pol.restricted_terms {
-		mut new_terms := []f32{len: 1, init: 0}
-		for i, term in terms {
-			new_terms << term / i
+		if id != pol.restricted_terms.len {
+			mut new_terms := []f32{len: 1, init: cst}
+			for i, term in terms {
+				if i != 0 {
+					new_terms << term / i
+				} else {
+					new_terms << term
+				}
+			}
+			restricted_terms[id] << new_terms
 		}
-		restricted_terms[id] << new_terms
 	}
-
 	return Polynomials{
 		restriction:      pol.restriction
 		restricted_terms: restricted_terms
@@ -179,15 +208,17 @@ fn (pol Polynomials) integrate(x f32) Polynomials {
 }
 
 fn (pol Polynomials) derivate(x f32) Polynomials {
-	mut restricted_terms := [][]f32{}
+	mut restricted_terms := [][]f32{len: pol.restricted_terms.len, init: []f32{}}
 	for id, terms in pol.restricted_terms {
-		mut new_terms := []f32{len: 1, init: 0}
-		for i, term in terms {
-			if i > 0 {
-				new_terms << term * i
+		if id != pol.restricted_terms.len {
+			mut new_terms := []f32{}
+			for i, term in terms {
+				if i > 0 {
+					new_terms << term * i
+				}
 			}
+			restricted_terms[id] << new_terms
 		}
-		restricted_terms[id] << new_terms
 	}
 
 	return Polynomials{
@@ -198,7 +229,6 @@ fn (pol Polynomials) derivate(x f32) Polynomials {
 
 fn add(p1 Polynomials, p2 Polynomials) Polynomials {
 	restriction := union_interval(p1, p2)
-
 	restricted_terms := complex_add(p1, p2, restriction)
 
 	return Polynomials{
@@ -213,9 +243,6 @@ fn complex_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32 {
 	for k in 0 .. restriction.len - 1 {
 		mut terms := []f32{}
 		id1 := p1.get_interval(restriction[k])
-		// println(restriction[k])
-		// println(id1)
-		// println(p1)
 		if id1 != -1 {
 			for term in p1.restricted_terms[id1] {
 				terms << term
@@ -236,6 +263,23 @@ fn complex_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32 {
 		restricted_terms << terms
 	}
 	return restricted_terms
+}
+
+fn (pol Polynomials) scalar_mult(m f32) Polynomials {
+	mut restricted_terms := [][]f32{len: pol.restricted_terms.len, init: []f32{}}
+	for id, terms in pol.restricted_terms {
+		if id != pol.restricted_terms.len {
+			mut new_terms := []f32{}
+			for term in terms {
+				new_terms << term * m
+			}
+			restricted_terms[id] << new_terms
+		}
+	}
+	return Polynomials{
+		restriction:      pol.restriction
+		restricted_terms: restricted_terms
+	}
 }
 
 // a:
@@ -339,24 +383,30 @@ pub fn get_smd(stick Stick_type, force Force) Shear_and_moment_diagram {
 	cstz := force.f.z
 
 	pos_x := force.point.x
+	res := [f32(0.0), force.point.x]
 
 	// Hypothesis of a straight beam
 	smd := Shear_and_moment_diagram{
-		// 	n:  Polynomials{
-		// 		terms: [cstx]
-		// 	}
-		// 	ty: Polynomials{
-		// 		terms: [csty]
-		// 	}
-		// 	tz: Polynomials{
-		// 		terms: [cstz]
-		// 	}
-		// 	mfy: Polynomials{
-		// 		terms: [-pos_x * cstz, cstz]
-		// 	}
-		// 	mfz: Polynomials{
-		// 		terms: [pos_x * cstz, -cstz]
-		// 	}
+		n:   Polynomials{
+			restriction:      res
+			restricted_terms: [[cstx]]
+		}
+		ty:  Polynomials{
+			restriction:      res
+			restricted_terms: [[csty]]
+		}
+		tz:  Polynomials{
+			restriction:      res
+			restricted_terms: [[cstz]]
+		}
+		mfy: Polynomials{
+			restriction:      res
+			restricted_terms: [[-pos_x * cstz, cstz]]
+		}
+		mfz: Polynomials{
+			restriction:      res
+			restricted_terms: [[pos_x * csty, -csty]]
+		}
 	}
 
 	return smd
@@ -367,5 +417,16 @@ fn get_constraints(stick Stick_type, smd Shear_and_moment_diagram) Constraints {
 }
 
 fn get_deplacements(stick Stick_type, smd Shear_and_moment_diagram) Deplacements {
-	return Deplacements{}
+	ux := smd.n.integrate(0).scalar_mult(stick.section.surface / stick.material.e)
+	uy := smd.mfz.integrate(0).integrate(0).scalar_mult(-1 / (stick.material.e * stick.section.i_g_z))
+	uz := smd.mfy.integrate(0).integrate(0).scalar_mult(1 / (stick.material.e * stick.section.i_g_z))
+	return Deplacements{
+		ux: ux
+		uy: uy
+		uz: uz
+		// 2:
+		// rx: Polynomials
+		// ry: Polynomials
+		// rz: Polynomials
+	}
 }
