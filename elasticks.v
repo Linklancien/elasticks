@@ -123,6 +123,9 @@ fn (pol Polynomials) get_interval(x f32) int {
 			return k
 		}
 	}
+	if x == pol.restriction[pol.restriction.len - 1] && pol.restriction.len - 2 > 0 {
+		return pol.restriction.len - 2
+	}
 	return -1
 }
 
