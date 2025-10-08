@@ -182,8 +182,12 @@ pub fn (pol Polynomials) value(x f32) f32 {
 		return 0
 	}
 
+	return pol_evaluated(x, pol.restricted_terms[interval])
+}
+
+fn pol_evaluated(x f32, pol []f32) f32{
 	mut r := f32(0.0)
-	for i, term in pol.restricted_terms[interval] {
+	for i, term in pol{
 		r += f32(term * pow(x, i))
 	}
 	return r

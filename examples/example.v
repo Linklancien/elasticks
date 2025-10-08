@@ -41,7 +41,7 @@ fn main() {
 	}
 	force2 := rdm.Force{
 		point: vec3[f32](app.stick.lenght, 0, 0)
-		f:     vec3[f32](0, 10, 10)
+		f:     vec3[f32](0, 0, 0)
 	}
 
 	app.smd, _, app.mvt = rdm.solve_forces_solicitation(app.stick, [force1, force2])
