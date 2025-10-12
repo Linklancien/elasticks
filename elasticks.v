@@ -304,10 +304,10 @@ fn (pol Polynomials) extend(l f32) Polynomials{
 	mut restriction := pol.restriction.clone()
 	if restriction[restriction.len-1] < l{
 		restriction << [l]
-		// println('Extended')
-		// println(restriction[restriction.len-1])
-		// println(restricted_terms[restricted_terms.len-1])
-		// println(pol_evaluated(restriction[restriction.len-1], restricted_terms[restricted_terms.len-1]))
+		println('Extended')
+		println(restriction[restriction.len-1])
+		println(restricted_terms[restricted_terms.len-1])
+		println(pol_evaluated(restriction[restriction.len-1], restricted_terms[restricted_terms.len-1]))
 		restricted_terms << [pol_evaluated(restriction[restriction.len-1], restricted_terms[restricted_terms.len-1])]
 		// println(restricted_terms)
 	}
