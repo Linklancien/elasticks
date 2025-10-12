@@ -64,7 +64,7 @@ fn render_all_graph(ctx gg.Context, sdm rdm.Shear_and_moment_diagram, mvt rdm.De
 	mut y := dec / 2
 	w := 500
 	h := 100
-	nb := 2000
+	nb := 200
 	// left
 	// n
 	abscise := []f32{len: nb + 1, init: l * index / nb}
@@ -80,7 +80,7 @@ fn render_all_graph(ctx gg.Context, sdm rdm.Shear_and_moment_diagram, mvt rdm.De
 	render_graph(ctx, x, y, w, h, abscise, value, 'mfz en MPa')
 	y += h + dec
 	value = []f32{len: nb + 1, init: mvt.uy.value(l * index / nb)}
-	render_graph(ctx, x, y, w, h, abscise, value, 'uy en MPa')
+	render_graph(ctx, x, y, w, h, abscise, value, 'uy en mm')
 
 	// change side /////
 	x += w + dec
@@ -99,7 +99,7 @@ fn render_all_graph(ctx gg.Context, sdm rdm.Shear_and_moment_diagram, mvt rdm.De
 	render_graph(ctx, x, y, w, h, abscise, value, 'mfy en MPa')
 	y += h + dec
 	value = []f32{len: nb + 1, init: mvt.uz.value(l * index / nb)}
-	render_graph(ctx, x, y, w, h, abscise, value, 'uz en MPa')
+	render_graph(ctx, x, y, w, h, abscise, value, 'uz en mm')
 
 }
 
@@ -116,8 +116,11 @@ fn render_graph(ctx gg.Context, x f32, y f32, w f32, h f32, abscise []f32, value
 	for k in 0 .. (abscise.len - 1) {
 		ctx.draw_line(x + w * abscise[k] / max_a, f(value[k]), x +
 			w * abscise[k + 1] / max_a, f(value[k + 1]), gg.red)
+		if /*value[k] == max || value[k] == min ||*/ k == 0 || k == abscise.len - 2{
+			ctx.draw_text_def(int(x + w * abscise[k] / max_a), int(f(value[k])), '${value[k]}')
+		}
 	}
-	ctx.draw_text_def(int(x), int(f(value[0])), '${value[0]}')
-	ctx.draw_text_def(int(x + w), int(f(value[abscise.len - 1])), '${value[abscise.len - 1]}')
+	// ctx.draw_text_def(int(x), int(f(value[0])), '${value[0]}')
+	// ctx.draw_text_def(int(x + w), int(f(value[abscise.len - 1])), '${value[abscise.len - 1]}')
 	ctx.draw_text_def(int(x + w / 2), int(y + h), name)
 }

@@ -106,17 +106,19 @@ pub fn Material.adcanced(re f32, rg f32, e f32) Material {
 }
 
 // B: Solve
-// a: Shear_and_moment_diagram
-// b: Constraints
-// c: Deplacements
-// d: Force
+// a: Polynomials
+// b: Shear_and_moment_diagram
+// c: Constraints
+// d: Deplacements
+// c: Force
 
+// a: Polynomials
 pub struct Polynomials {
 	restriction      []f32 = [f32(0.0), 0]
 	restricted_terms [][]f32
 }
 
-//
+// Intervales
 fn (pol Polynomials) get_interval(x f32) int {
 	for k in 0 .. pol.restriction.len - 1 {
 		if pol.restriction[k] <= x && x < pol.restriction[k + 1] {
@@ -189,6 +191,14 @@ fn pol_evaluated(x f32, pol []f32) f32{
 	mut r := f32(0.0)
 	for i, term in pol{
 		r += f32(term * pow(x, i))
+	}
+	if r == 32{
+		println(x)
+		println(pol)
+		for i, term in pol{
+			println(f32(term * pow(x, i)))
+		}
+		println(r)
 	}
 	return r
 }
@@ -289,6 +299,24 @@ fn (pol Polynomials) scalar_mult(m f32) Polynomials {
 	}
 }
 
+fn (pol Polynomials) extend(l f32) Polynomials{
+	mut restricted_terms := pol.restricted_terms.clone()
+	mut restriction := pol.restriction.clone()
+	if restriction[restriction.len-1] < l{
+		restriction << [l]
+		// println('Extended')
+		// println(restriction[restriction.len-1])
+		// println(restricted_terms[restricted_terms.len-1])
+		// println(pol_evaluated(restriction[restriction.len-1], restricted_terms[restricted_terms.len-1]))
+		restricted_terms << [pol_evaluated(restriction[restriction.len-1], restricted_terms[restricted_terms.len-1])]
+		// println(restricted_terms)
+	}
+	return Polynomials{
+		restriction:      restriction
+		restricted_terms: restricted_terms
+	}
+}
+
 // a:
 // 1: shears
 // 2: moments
@@ -315,7 +343,7 @@ fn (smd1 Shear_and_moment_diagram) + (smd2 Shear_and_moment_diagram) Shear_and_m
 	}
 }
 
-// b: Constraints
+// c: Constraints
 pub struct Constraints {
 	sigma f32
 	taux  f32
@@ -330,7 +358,7 @@ fn (c1 Constraints) + (c2 Constraints) Constraints {
 	}
 }
 
-// c: Deplacements
+// d: Deplacements
 // 1: translations
 // 2: rotation
 pub struct Deplacements {
@@ -356,7 +384,7 @@ fn (d1 Deplacements) + (d2 Deplacements) Deplacements {
 	}
 }
 
-// d: Force
+// c: Force
 pub struct Force {
 pub:
 	point Vec3[f32]
@@ -424,9 +452,9 @@ fn get_constraints(stick Stick_type, smd Shear_and_moment_diagram) Constraints {
 }
 
 fn get_deplacements(stick Stick_type, smd Shear_and_moment_diagram) Deplacements {
-	ux := smd.n.integrate(0).scalar_mult(stick.section.surface / stick.material.e)
-	uy := smd.mfz.integrate(0).integrate(0).scalar_mult(-1 / (stick.material.e * stick.section.i_g_z))
-	uz := smd.mfy.integrate(0).integrate(0).scalar_mult(1 / (stick.material.e * stick.section.i_g_z))
+	ux := smd.n.integrate(0).scalar_mult(stick.section.surface / stick.material.e).extend(stick.lenght)
+	uy := smd.mfz.integrate(0).integrate(0).scalar_mult(-1 / (stick.material.e * stick.section.i_g_z)).extend(stick.lenght)
+	uz := smd.mfy.integrate(0).integrate(0).scalar_mult(1 / (stick.material.e * stick.section.i_g_z)).extend(stick.lenght)
 	return Deplacements{
 		ux: ux
 		uy: uy
