@@ -330,6 +330,16 @@ fn (pol Polynomials) extend(l f32) Polynomials{
 	}
 }
 
+fn (pol Polynomials) get_abscise(nb int) []f32{
+	abscise := []f32{len: nb, init: pol.restriction[pol.restriction.len - 1] * index / nb}
+	return abscise
+}
+
+fn (pol Polynomials) get_values(nb int) []f32{
+	values := []f32{len: nb, init: pol.value(pol.restriction[pol.restriction.len - 1] * index / nb)[0]}
+	return values
+}
+
 // a:
 // 1: shears
 // 2: moments
@@ -481,7 +491,7 @@ fn get_deplacements(stick Stick_type, smd Shear_and_moment_diagram) Deplacements
 
 
 // C: Graph using gg
-pub fn render_all_graph(ctx gg.Context, sdm Shear_and_moment_diagram, mvt Deplacements, stick Stick_type) {
+pub fn render_all_graph(ctx gg.Context, smd Shear_and_moment_diagram, mvt Deplacements, stick Stick_type) {
 	l := stick.lenght
 	dec := 50
 	mut x := dec
@@ -491,19 +501,19 @@ pub fn render_all_graph(ctx gg.Context, sdm Shear_and_moment_diagram, mvt Deplac
 	nb := 2000
 	// left
 	// n
-	abscise := []f32{len: nb, init: l * index / nb}
-	mut value := []f32{len: nb, init: sdm.n.value(l * index / nb)[0]}
+	abscise := smd.n.get_abscise(nb)
+	mut value := smd.n.get_values(nb)
 	render_graph(ctx, x, y, w, h, abscise, value, 'n en MPa')
 	// ty
 	y += h + dec
-	value = []f32{len: nb, init: sdm.ty.value(l * index / nb)[0]}
+	value = smd.ty.get_values(nb)
 	render_graph(ctx, x, y, w, h, abscise, value, 'ty en MPa')
 	// mfz
 	y += h + dec
-	value = []f32{len: nb, init: sdm.mfz.value(l * index / nb)[0]}
+	value = smd.mfz.get_values(nb)
 	render_graph(ctx, x, y, w, h, abscise, value, 'mfz en MPa')
 	y += h + dec
-	value = []f32{len: nb, init: mvt.uy.value(l * index / nb)[0]}
+	value = mvt.uy.get_values(nb)
 	render_graph(ctx, x, y, w, h, abscise, value, 'uy en mm')
 
 	// change side /////
@@ -511,18 +521,18 @@ pub fn render_all_graph(ctx gg.Context, sdm Shear_and_moment_diagram, mvt Deplac
 	y = dec / 2
 	// right
 	// mt
-	value = []f32{len: nb, init: sdm.mt.value(l * index / nb)[0]}
+	value = smd.mt.get_values(nb)
 	render_graph(ctx, x, y, w, h, abscise, value, 'mt en MPa')
 	// tz
 	y += h + dec
-	value = []f32{len: nb, init: sdm.tz.value(l * index / nb)[0]}
+	value = smd.tz.get_values(nb)
 	render_graph(ctx, x, y, w, h, abscise, value, 'tz en MPa')
 	// mft
 	y += h + dec
-	value = []f32{len: nb, init: sdm.mfy.value(l * index / nb)[0]}
+	value = smd.mfy.get_values(nb)
 	render_graph(ctx, x, y, w, h, abscise, value, 'mfy en MPa')
 	y += h + dec
-	value = []f32{len: nb, init: mvt.uz.value(l * index / nb)[0]}
+	value = mvt.uz.get_values(nb)
 	render_graph(ctx, x, y, w, h, abscise, value, 'uz en mm')
 
 }
