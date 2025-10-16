@@ -331,12 +331,27 @@ fn (pol Polynomials) extend(l f32) Polynomials{
 }
 
 fn (pol Polynomials) get_abscise(nb int) []f32{
-	abscise := []f32{len: nb, init: pol.restriction[pol.restriction.len - 1] * index / nb}
+	real_nb := nb + 2*pol.restriction.len
+	max := pol.restriction[pol.restriction.len - 1]
+
+	mut abscise := []f32{}
+	mut desc_id := 1
+	for disc in pol.restriction{
+		if disc != pol.restriction[0]{
+			local_proportion := int(nb * (max / disc))
+			abscise <<  []f32{len: local_proportion, init: max * (index + desc_id) / nb}
+			desc_id += local_proportion
+		}
+		abscise << [disc, disc]
+	}
+
+	assert abscise.len == real_nb, 'not the same len as the one expected ${pol.restriction} $abscise'
 	return abscise
 }
 
 fn (pol Polynomials) get_values(nb int) []f32{
-	values := []f32{len: nb, init: pol.value(pol.restriction[pol.restriction.len - 1] * index / nb)[0]}
+	real_nb := nb + pol.restriction.len
+	mut values := []f32{len: nb, init: pol.value(pol.restriction[pol.restriction.len - 1] * index / nb)[0]}
 	return values
 }
 
