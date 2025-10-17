@@ -355,8 +355,34 @@ fn (pol Polynomials) get_abscise(nb int) []f32{
 }
 
 fn (pol Polynomials) get_values(nb int) []f32{
-	real_nb := nb + pol.restriction.len
-	mut values := []f32{len: nb, init: pol.value(pol.restriction[pol.restriction.len - 1] * index / nb)[0]}
+	real_nb := nb + 2*pol.restriction.len - 1
+	if pol.restriction == [f32(0.0), 0.0]{
+		return []f32{len: real_nb, init: f32(0)}
+	}
+	max := pol.restriction[pol.restriction.len - 1]
+
+	mut values := []f32{}
+	mut desc_id := 1
+	for disc in pol.restriction{
+		if disc != pol.restriction[0]{
+			local_proportion := int(nb * (max / disc))
+			values <<  []f32{len: local_proportion, init: pol.value(max * (index + desc_id) / nb)[0]}
+			desc_id += local_proportion
+		}
+		if disc == max{
+			values << [f32(0)]
+		}
+		else if disc == pol.restriction[0]{
+			val := pol.value(disc)
+			values << [f32(0), val[0]]
+		}
+		else{
+			val := pol.value(disc)
+			values << [val[0], val[1]]
+		}
+	}
+
+	assert values.len == real_nb, 'not the same len as the one expected ${pol.restriction} $values'
 	return values
 }
 
@@ -512,7 +538,6 @@ fn get_deplacements(stick Stick_type, smd Shear_and_moment_diagram) Deplacements
 
 // C: Graph using gg
 pub fn render_all_graph(ctx gg.Context, smd Shear_and_moment_diagram, mvt Deplacements, stick Stick_type) {
-	l := stick.lenght
 	dec := 50
 	mut x := dec
 	mut y := dec / 2

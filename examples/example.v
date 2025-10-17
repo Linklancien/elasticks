@@ -23,9 +23,9 @@ fn main() {
 		}
 	}
 	app.ctx = gg.new_context(
-		fullscreen:    false
+		fullscreen:    true
 		width:         100 * 18
-		height:        100 * 6
+		height:        100 * 7
 		create_window: true
 		window_title:  '-Elastick example-'
 		bg_color:      gg.gray
@@ -33,17 +33,20 @@ fn main() {
 		frame_fn:      on_frame
 		sample_count:  4
 	)
+	fe,igrgekzsgnsikgi
 
 	force1 := rdm.Force{
 		point: vec3[f32](app.stick.lenght, 0, 0)
-		f:     vec3[f32](10, 0, 10)
+		f:     vec3[f32](10, -10, 10)
 	}
-	// force2 := rdm.Force{
-	// 	point: vec3[f32](app.stick.lenght, 0, 0)
-	// 	f:     vec3[f32](1, 0, 0)
-	// }
+	force2 := rdm.Force{
+		point: vec3[f32](app.stick.lenght, 0, 0)
+		f:     vec3[f32](1, 0, 0)
+	}
+	forces := [force1]
+	// forces := [force1, force2]
 
-	app.smd, _, app.mvt = rdm.solve_forces_solicitation(app.stick, [force1])
+	app.smd, _, app.mvt = rdm.solve_forces_solicitation(app.stick, forces)
 	println('All Example')
 	println(app.smd)
 	// println(app.mvt)
