@@ -2,6 +2,28 @@ module elasticks
 
 import math.vec { vec3 }
 
+fn test_get_abscise(){
+	p1 := Polynomials{
+		restriction:      [f32(0), 50, 100]
+		restricted_terms: [[f32(10)], [f32(20)]]
+	}
+	nb := 500
+	abscise := p1.get_abscise(nb)
+	real_nb := nb + 2*p1.restriction.len - 1
+	assert real_nb == abscise.len, 'not the same len as the one expected ${p1.restriction} $abscise'
+}
+
+fn test_get_values(){
+	p1 := Polynomials{
+		restriction:      [f32(0), 50, 100]
+		restricted_terms: [[f32(10)], [f32(20)]]
+	}
+	nb := 500
+	values := p1.get_values(nb)
+	real_nb := nb + 2*p1.restriction.len - 1
+	assert values.len == real_nb, 'not the same len as the one expected ${p1.restriction} $values'
+}
+
 fn test_polynomials_add() {
 	p1 := Polynomials{
 		restriction:      [f32(0), 10]
@@ -44,17 +66,17 @@ fn test_polynomials_value() {
 	}
 
 	value := p1.value(5)
-	assert value == f32(10), "error, value doesn't work proprely ${p1}"
+	assert value[0] == f32(10), "error, value doesn't work proprely ${p1}"
 
 	p2 := Polynomials{
 		restriction:      [f32(0), 6]
 		restricted_terms: [[f32(0), 1]]
 	}
 
-	assert p2.value(0) == 0.0, "error, value doesn't work proprely"
-	assert p2.value(1) == 1.0, "error, value doesn't work proprely"
-	assert p2.value(5) == 5.0, "error, value doesn't work proprely"
-	assert p2.value(5.5) == 5.5, "error, value doesn't work proprely"
+	assert p2.value(0)[0] == 0.0, "error, value doesn't work proprely"
+	assert p2.value(1)[0] == 1.0, "error, value doesn't work proprely"
+	assert p2.value(5)[0] == 5.0, "error, value doesn't work proprely"
+	assert p2.value(5.5)[0] == 5.5, "error, value doesn't work proprely"
 }
 
 fn test_get_smd() {

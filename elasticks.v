@@ -127,8 +127,13 @@ fn (pol Polynomials) get_interval(x f32) []int {
 		if pol.restriction[k] < x && x < pol.restriction[k + 1] {
 			return [k]
 		}
-		else if pol.restriction[k] == x && k != 0 {
-			return [k-1, k]
+		else if pol.restriction[k] == x{ 
+			if k != 0 {
+				return [k-1, k]
+			}
+			else{
+				return [0]
+			}
 		}
 	}
 	return [-1]
@@ -335,10 +340,10 @@ fn (pol Polynomials) get_abscise(nb int) []f32{
 	max := pol.restriction[pol.restriction.len - 1]
 
 	mut abscise := []f32{}
-	mut desc_id := 1
+	mut desc_id := 0
 	for disc in pol.restriction{
 		if disc != pol.restriction[0]{
-			local_proportion := int(nb * (max / disc))
+			local_proportion := int(nb * (disc / max)) - desc_id
 			abscise <<  []f32{len: local_proportion, init: max * (index + desc_id) / nb}
 			desc_id += local_proportion
 		}
@@ -350,7 +355,6 @@ fn (pol Polynomials) get_abscise(nb int) []f32{
 		}
 	}
 
-	assert abscise.len == real_nb, 'not the same len as the one expected ${pol.restriction} $abscise'
 	return abscise
 }
 
@@ -362,10 +366,10 @@ fn (pol Polynomials) get_values(nb int) []f32{
 	max := pol.restriction[pol.restriction.len - 1]
 
 	mut values := []f32{}
-	mut desc_id := 1
+	mut desc_id := 0
 	for disc in pol.restriction{
 		if disc != pol.restriction[0]{
-			local_proportion := int(nb * (max / disc))
+			local_proportion := int(nb * (disc / max))  - desc_id
 			values <<  []f32{len: local_proportion, init: pol.value(max * (index + desc_id) / nb)[0]}
 			desc_id += local_proportion
 		}
@@ -382,7 +386,6 @@ fn (pol Polynomials) get_values(nb int) []f32{
 		}
 	}
 
-	assert values.len == real_nb, 'not the same len as the one expected ${pol.restriction} $values'
 	return values
 }
 
@@ -466,7 +469,9 @@ pub fn solve_forces_solicitation(stick Stick_type, forces []Force) (Shear_and_mo
 	mut total_deplacements := Deplacements{}
 	for force in forces {
 		new_smd, new_constraints, new_deplacements := solve_one(stick, force)
+		println(total_smd)
 		total_smd += new_smd
+		println(total_smd)
 		total_constraints += new_constraints
 		total_deplacements += new_deplacements
 	}
