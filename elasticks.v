@@ -126,12 +126,10 @@ fn (pol Polynomials) get_interval(x f32) []int {
 	for k in 0 .. pol.restriction.len - 1 {
 		if pol.restriction[k] < x && x < pol.restriction[k + 1] {
 			return [k]
-		}
-		else if pol.restriction[k] == x{ 
+		} else if pol.restriction[k] == x {
 			if k != 0 {
-				return [k-1, k]
-			}
-			else{
+				return [k - 1, k]
+			} else {
 				return [0]
 			}
 		}
@@ -198,18 +196,10 @@ pub fn (pol Polynomials) value(x f32) []f32 {
 	return values
 }
 
-fn pol_evaluated(x f32, pol []f32) f32{
+fn pol_evaluated(x f32, pol []f32) f32 {
 	mut r := f32(0.0)
-	for i, term in pol{
+	for i, term in pol {
 		r += f32(term * pow(x, i))
-	}
-	if r == 32{
-		println(x)
-		println(pol)
-		for i, term in pol{
-			println(f32(term * pow(x, i)))
-		}
-		println(r)
 	}
 	return r
 }
@@ -256,10 +246,9 @@ fn (pol Polynomials) derivate(x f32) Polynomials {
 }
 
 fn add(p1 Polynomials, p2 Polynomials) Polynomials {
-	if p1.restriction == [f32(0.0), 0.0]{
+	if p1.restriction == [f32(0.0), 0.0] {
 		return p2
-	}
-	else if p2.restriction == [f32(0.0), 0.0]{
+	} else if p2.restriction == [f32(0.0), 0.0] {
 		return p1
 	}
 	restriction := union_interval(p1, p2)
@@ -275,7 +264,6 @@ fn complex_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32 {
 	mut restricted_terms := [][]f32{}
 
 	for k in 0 .. restriction.len - 1 {
-
 		mut terms := []f32{}
 		id1 := p1.get_interval(restriction[k])
 		if id1 != [-1] {
@@ -317,16 +305,14 @@ fn (pol Polynomials) scalar_mult(m f32) Polynomials {
 	}
 }
 
-fn (pol Polynomials) extend(l f32) Polynomials{
+fn (pol Polynomials) extend(l f32) Polynomials {
 	mut restricted_terms := pol.restricted_terms.clone()
 	mut restriction := pol.restriction.clone()
-	if restriction[restriction.len-1] < l{
+	if restriction[restriction.len - 1] < l {
 		restriction << [l]
-		println('Extended')
-		println(restriction[restriction.len-1])
-		println(restricted_terms[restricted_terms.len-1])
-		println(pol_evaluated(restriction[restriction.len-1], restricted_terms[restricted_terms.len-1]))
-		restricted_terms << [pol_evaluated(restriction[restriction.len-1], restricted_terms[restricted_terms.len-1])]
+		restricted_terms << [
+			pol_evaluated(restriction[restriction.len - 1], restricted_terms[restricted_terms.len - 1]),
+		]
 		// println(restricted_terms)
 	}
 	return Polynomials{
@@ -335,22 +321,24 @@ fn (pol Polynomials) extend(l f32) Polynomials{
 	}
 }
 
-fn (pol Polynomials) get_abscise(nb int) []f32{
-	real_nb := nb + 2*pol.restriction.len - 1
+fn (pol Polynomials) get_abscise(nb int) []f32 {
+	real_nb := nb - 2 * pol.restriction.len + 1
+	if pol.restriction == [f32(0.0), 0.0] {
+		return []f32{len: nb, init: f32(0)}
+	}
 	max := pol.restriction[pol.restriction.len - 1]
 
 	mut abscise := []f32{}
 	mut desc_id := 0
-	for disc in pol.restriction{
-		if disc != pol.restriction[0]{
-			local_proportion := int(nb * (disc / max)) - desc_id
-			abscise <<  []f32{len: local_proportion, init: max * (index + desc_id) / nb}
+	for disc in pol.restriction {
+		if disc != pol.restriction[0] {
+			local_proportion := int(real_nb * (disc / max)) - desc_id
+			abscise << []f32{len: local_proportion, init: max * (index + desc_id) / real_nb}
 			desc_id += local_proportion
 		}
-		if disc != max{
+		if disc != max {
 			abscise << [disc, disc]
-		}
-		else{
+		} else {
 			abscise << [disc]
 		}
 	}
@@ -358,29 +346,27 @@ fn (pol Polynomials) get_abscise(nb int) []f32{
 	return abscise
 }
 
-fn (pol Polynomials) get_values(nb int) []f32{
-	real_nb := nb + 2*pol.restriction.len - 1
-	if pol.restriction == [f32(0.0), 0.0]{
-		return []f32{len: real_nb, init: f32(0)}
+fn (pol Polynomials) get_values(nb int) []f32 {
+	real_nb := nb - 2 * pol.restriction.len + 1
+	if pol.restriction == [f32(0.0), 0.0] {
+		return []f32{len: nb, init: f32(0)}
 	}
 	max := pol.restriction[pol.restriction.len - 1]
 
 	mut values := []f32{}
 	mut desc_id := 0
-	for disc in pol.restriction{
-		if disc != pol.restriction[0]{
-			local_proportion := int(nb * (disc / max))  - desc_id
-			values <<  []f32{len: local_proportion, init: pol.value(max * (index + desc_id) / nb)[0]}
+	for disc in pol.restriction {
+		if disc != pol.restriction[0] {
+			local_proportion := int(real_nb * (disc / max)) - desc_id
+			values << []f32{len: local_proportion, init: pol.value(max * (index + desc_id) / real_nb)[0]}
 			desc_id += local_proportion
 		}
-		if disc == max{
+		if disc == max {
 			values << [f32(0)]
-		}
-		else if disc == pol.restriction[0]{
+		} else if disc == pol.restriction[0] {
 			val := pol.value(disc)
 			values << [f32(0), val[0]]
-		}
-		else{
+		} else {
 			val := pol.value(disc)
 			values << [val[0], val[1]]
 		}
@@ -469,9 +455,7 @@ pub fn solve_forces_solicitation(stick Stick_type, forces []Force) (Shear_and_mo
 	mut total_deplacements := Deplacements{}
 	for force in forces {
 		new_smd, new_constraints, new_deplacements := solve_one(stick, force)
-		println(total_smd)
 		total_smd += new_smd
-		println(total_smd)
 		total_constraints += new_constraints
 		total_deplacements += new_deplacements
 	}
@@ -540,7 +524,6 @@ fn get_deplacements(stick Stick_type, smd Shear_and_moment_diagram) Deplacements
 	}
 }
 
-
 // C: Graph using gg
 pub fn render_all_graph(ctx gg.Context, smd Shear_and_moment_diagram, mvt Deplacements, stick Stick_type) {
 	dec := 50
@@ -584,7 +567,6 @@ pub fn render_all_graph(ctx gg.Context, smd Shear_and_moment_diagram, mvt Deplac
 	y += h + dec
 	value = mvt.uz.get_values(nb)
 	render_graph(ctx, x, y, w, h, abscise, value, 'uz en mm')
-
 }
 
 fn render_graph(ctx gg.Context, x f32, y f32, w f32, h f32, abscise []f32, value []f32, name string) {
@@ -592,18 +574,19 @@ fn render_graph(ctx gg.Context, x f32, y f32, w f32, h f32, abscise []f32, value
 	min := min(value) or { panic('No min value') }
 	max_a := max(abscise) or { panic('No max abscise') }
 
-	f := fn [max, min, y, h](value f32) f32{
-		return y + h - h*(value - min)/(max - min)
+	f := fn [max, min, y, h] (value f32) f32 {
+		return y + h - h * (value - min) / (max - min)
 	}
 
 	mut render_max := true
 	mut render_min := true
-	
-	ctx.draw_rounded_rect_filled(f32(x - 10), f32(y - 10), f32(w + 35), f32(h + 10 + 35), 5, gg.dark_gray)
+
+	ctx.draw_rounded_rect_filled(f32(x - 10), f32(y - 10), f32(w + 35), f32(h + 10 + 35),
+		5, gg.dark_gray)
 	for k in 0 .. (abscise.len - 1) {
-		ctx.draw_line(f32(x + w * abscise[k] / max_a), f32(f(value[k])), f32(x +
-			w * abscise[k + 1] / max_a), f32(f(value[k + 1])), gg.red)
-		if k == 0 || k == abscise.len - 2{
+		ctx.draw_line(f32(x + w * abscise[k] / max_a), f32(f(value[k])), f32(x + w * abscise[k +
+			1] / max_a), f32(f(value[k + 1])), gg.red)
+		if k == 0 || k == abscise.len - 2 {
 			ctx.draw_text_def(int(x + w * abscise[k] / max_a), int(f(value[k])), 'x: ${abscise[k]}  y: ${value[k]}')
 			if value[k] == min {
 				render_min = false
@@ -611,12 +594,10 @@ fn render_graph(ctx gg.Context, x f32, y f32, w f32, h f32, abscise []f32, value
 			if value[k] == max {
 				render_max = false
 			}
-		}
-		else if value[k] == max && render_max {
+		} else if value[k] == max && render_max {
 			ctx.draw_text_def(int(x + w * abscise[k] / max_a), int(f(value[k])), 'x: ${abscise[k]}  y: ${value[k]}')
 			render_max = false
-		}
-		else if value[k] == min && render_min{
+		} else if value[k] == min && render_min {
 			ctx.draw_text_def(int(x + w * abscise[k] / max_a), int(f(value[k])), 'x: ${abscise[k]}  y: ${value[k]}')
 			render_min = false
 		}

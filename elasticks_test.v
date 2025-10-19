@@ -2,26 +2,52 @@ module elasticks
 
 import math.vec { vec3 }
 
-fn test_get_abscise(){
-	p1 := Polynomials{
-		restriction:      [f32(0), 50, 100]
-		restricted_terms: [[f32(10)], [f32(20)]]
+fn test_get_abscise() {
+	polys := [
+		Polynomials{},
+		Polynomials{
+			restriction:      [f32(0), 100]
+			restricted_terms: [[f32(10)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 50, 100]
+			restricted_terms: [[f32(10)], [f32(20)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 50, 100, 150]
+			restricted_terms: [[f32(10)], [f32(20)], [f32(30)]]
+		},
+	]
+	for pol in polys {
+		nb := 500
+		abscise := pol.get_abscise(nb)
+
+		assert nb == abscise.len, 'not the same len as the one expected ${pol.restriction} ${abscise}'
 	}
-	nb := 500
-	abscise := p1.get_abscise(nb)
-	real_nb := nb + 2*p1.restriction.len - 1
-	assert real_nb == abscise.len, 'not the same len as the one expected ${p1.restriction} $abscise'
 }
 
-fn test_get_values(){
-	p1 := Polynomials{
-		restriction:      [f32(0), 50, 100]
-		restricted_terms: [[f32(10)], [f32(20)]]
+fn test_get_values() {
+	polys := [
+		Polynomials{},
+		Polynomials{
+			restriction:      [f32(0), 100]
+			restricted_terms: [[f32(10)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 50, 100]
+			restricted_terms: [[f32(10)], [f32(20)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 50, 100, 150]
+			restricted_terms: [[f32(10)], [f32(20)], [f32(30)]]
+		},
+	]
+	for pol in polys {
+		nb := 500
+		values := pol.get_values(nb)
+
+		assert nb == values.len, 'not the same len as the one expected ${pol.restriction} ${values}'
 	}
-	nb := 500
-	values := p1.get_values(nb)
-	real_nb := nb + 2*p1.restriction.len - 1
-	assert values.len == real_nb, 'not the same len as the one expected ${p1.restriction} $values'
 }
 
 fn test_polynomials_add() {
