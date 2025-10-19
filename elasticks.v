@@ -509,6 +509,7 @@ fn get_constraints(stick Stick_type, smd Shear_and_moment_diagram) Constraints {
 }
 
 fn get_deplacements(stick Stick_type, smd Shear_and_moment_diagram) Deplacements {
+	println(smd.mfz)
 	ux := smd.n.integrate(0).scalar_mult(stick.section.surface / stick.material.e).extend(stick.lenght)
 	uy := smd.mfz.integrate(0).integrate(0).scalar_mult(-1 / (stick.material.e * stick.section.i_g_z)).extend(stick.lenght)
 	uz := smd.mfy.integrate(0).integrate(0).scalar_mult(1 / (stick.material.e * stick.section.i_g_z)).extend(stick.lenght)
