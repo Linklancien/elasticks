@@ -124,3 +124,27 @@ fn test_get_smd() {
 	smd := get_smd(stick, force)
 	// assert 1 == 0
 }
+
+fn test_extend(){
+	polys := [
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10), f32(20)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10), f32(20), f32(30)]]
+		},
+	]
+	for p in polys {
+		pol := p.extend(20)
+
+		assert pol.restriction.len == 3, 'failed $pol.restriction'
+		assert pol.restricted_terms.len == 2, 'failed $pol.restricted_terms'
+		assert pol.restricted_terms[1].len == 1, 'failed ${pol.restricted_terms[1]}'
+	}
+}
