@@ -216,7 +216,12 @@ fn (pol Polynomials) integrate(cst f32) Polynomials {
 					new_terms << term
 				}
 			}
-			restricted_terms[id] << new_terms
+			if new_terms[new_terms.len -1] == f32(0){
+				restricted_terms[id] << [f32(0)]
+			}
+			else{
+				restricted_terms[id] << new_terms
+			}
 		}
 	}
 	return Polynomials{

@@ -258,7 +258,7 @@ fn test_integrate_scalar_mult_extend() {
 
 	assert add_pol.restriction.len == 3, 'add_pol failed $add_pol'
 	assert add_pol.restricted_terms.len == 2, 'add_pol failed $add_pol'
-	assert add_pol.restricted_terms[1].len == 1, 'add_pol failed $add_pol'
+	assert add_pol.restricted_terms[1].len == 1, 'add_pol failed $pol1, $pol2, $add_pol'
 }
 
 // RDM TEST
