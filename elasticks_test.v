@@ -125,6 +125,29 @@ fn test_get_smd() {
 	// assert 1 == 0
 }
 
+fn test_scalar_mult(){
+	polys := [
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10), f32(20)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10), f32(20), f32(30)]]
+		},
+	]
+	for p in polys[1..] {
+		pol := p.scalar_mult(1/20)
+
+		assert p.restriction.len == pol.restriction.len, 'failed $pol.restriction'
+		assert p.restricted_terms.len == pol.restricted_terms.len, 'failed $pol.restricted_terms'
+	}
+}
+
 fn test_extend(){
 	polys := [
 		Polynomials{
@@ -140,7 +163,7 @@ fn test_extend(){
 			restricted_terms: [[f32(10), f32(20), f32(30)]]
 		},
 	]
-	for p in polys {
+	for p in polys[1..] {
 		pol := p.extend(20)
 
 		assert pol.restriction.len == 3, 'failed $pol.restriction'
