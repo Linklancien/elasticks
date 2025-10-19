@@ -100,6 +100,23 @@ fn test_polynomials_add() {
 	assert sum56.restriction.len == 3, 'sum56 $sum56'
 	assert sum56.restricted_terms.len == 2, 'sum56 $sum56'
 	assert sum56.restricted_terms[1] == [f32(0)], 'sum56 $sum56'
+
+	p7 := Polynomials{
+		restriction:      [f32(0), 5, 10]
+		restricted_terms: [[f32(0), 1], [f32(0)]]
+	}
+
+	p8 := Polynomials{
+		restriction:      [f32(0), 10]
+		restricted_terms: [[f32(0)]]
+	}
+	
+	sum78 := add(p7, p8)
+	sum87 := add(p8, p7)
+	panic(sum78)
+	assert sum78 == sum87, 'complex sum is not reversible ${sum78}, ${sum87}'
+	assert sum78.restricted_terms.len == 2, ' ${sum78}'
+	assert sum78.restricted_terms[1].len == 1, ' ${sum78}'
 }
 
 fn test_polynomials_value() {
