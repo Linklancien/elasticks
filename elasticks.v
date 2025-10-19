@@ -225,7 +225,7 @@ fn (pol Polynomials) integrate(cst f32) Polynomials {
 	}
 }
 
-fn (pol Polynomials) derivate(x f32) Polynomials {
+fn (pol Polynomials) derivate() Polynomials {
 	mut restricted_terms := [][]f32{len: pol.restricted_terms.len, init: []f32{}}
 	for id, terms in pol.restricted_terms {
 		if id != pol.restricted_terms.len {

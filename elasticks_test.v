@@ -141,7 +141,7 @@ fn test_scalar_mult(){
 		},
 	]
 	for p in polys[1..] {
-		pol := p.scalar_mult(1/20)
+		pol := p.scalar_mult(20)
 
 		assert p.restriction.len == pol.restriction.len, 'failed $pol.restriction'
 		assert p.restricted_terms.len == pol.restricted_terms.len, 'failed $pol.restricted_terms'
@@ -169,5 +169,51 @@ fn test_extend(){
 		assert pol.restriction.len == 3, 'failed $pol.restriction'
 		assert pol.restricted_terms.len == 2, 'failed $pol.restricted_terms'
 		assert pol.restricted_terms[1].len == 1, 'failed ${pol.restricted_terms[1]}'
+	}
+}
+
+fn test_integrate() {
+	polys := [
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10), f32(20)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10), f32(20), f32(30)]]
+		},
+	]
+	for p in polys[1..] {
+		cst := 0
+		pol := p.integrate(cst)
+
+		assert pol.restricted_terms[0].len == p.restricted_terms[0].len + 1, 'failed $pol.restricted_terms'
+		assert pol.restricted_terms[0][0] == cst, 'failed ${pol.restricted_terms[0]}'
+	}
+}
+
+fn test_derivate() {
+	polys := [
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10), f32(20)]]
+		},
+		Polynomials{
+			restriction:      [f32(0), 10]
+			restricted_terms: [[f32(10), f32(20), f32(30)]]
+		},
+	]
+	for p in polys[1..] {
+		pol := p.derivate()
+
+		assert pol.restricted_terms[0].len == p.restricted_terms[0].len - 1, 'failed $pol.restricted_terms'
 	}
 }
