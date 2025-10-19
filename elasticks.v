@@ -274,11 +274,22 @@ fn complex_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32 {
 
 		id2 := p2.get_interval(restriction[k])
 		if id2 != [-1] {
-			for id_term, term in p2.restricted_terms[id2[0]] {
-				if id_term >= terms.len {
-					terms << term
-				} else {
-					terms[id_term] += term
+			if id2.len == 1{
+				for id_term, term in p2.restricted_terms[id2[0]] {
+					if id_term >= terms.len {
+						terms << term
+					} else {
+						terms[id_term] += term
+					}
+				}
+			}
+			else{
+				for id_term, term in p2.restricted_terms[id2[1]] {
+					if id_term >= terms.len {
+						terms << term
+					} else {
+						terms[id_term] += term
+					}
 				}
 			}
 		}
@@ -509,7 +520,6 @@ fn get_constraints(stick Stick_type, smd Shear_and_moment_diagram) Constraints {
 }
 
 fn get_deplacements(stick Stick_type, smd Shear_and_moment_diagram) Deplacements {
-	println(smd.mfz)
 	ux := smd.n.integrate(0).scalar_mult(stick.section.surface / stick.material.e).extend(stick.lenght)
 	uy := smd.mfz.integrate(0).integrate(0).scalar_mult(-1 / (stick.material.e * stick.section.i_g_z)).extend(stick.lenght)
 	uz := smd.mfy.integrate(0).integrate(0).scalar_mult(1 / (stick.material.e * stick.section.i_g_z)).extend(stick.lenght)
