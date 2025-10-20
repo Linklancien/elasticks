@@ -327,14 +327,17 @@ fn (pol Polynomials) scalar_mult(m f32) Polynomials {
 	}
 }
 
-fn (pol Polynomials) extend(l f32) Polynomials {
+fn (pol Polynomials) extend(max_l f32) Polynomials {
 	mut restricted_terms := pol.restricted_terms.clone()
 	mut restriction := pol.restriction.clone()
-	if restriction[restriction.len - 1] < l {
+	if restriction[restriction.len - 1] < max_l {
+		deriv := pol.derivate().restricted_terms[restricted_terms.len - 1]
+		l := restriction[restriction.len - 1]
 		restricted_terms << [
-			pol_evaluated(restriction[restriction.len - 1], restricted_terms[restricted_terms.len - 1]),
+			pol_evaluated(l, restricted_terms[restricted_terms.len - 1]) - pol_evaluated(l, deriv) * l,
+			pol_evaluated(l, deriv),
 		]
-		restriction << [l]
+		restriction << [max_l]
 	}
 	return Polynomials{
 		restriction:      restriction
