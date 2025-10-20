@@ -255,10 +255,6 @@ fn add(p1 Polynomials, p2 Polynomials) Polynomials {
 	restricted_terms := complex_add(p1, p2, restriction)
 
 
-	// if restriction == [f32(0.0), 5.0, 10.0]{
-	// 	panic('p1 $p1, p2 $p2, restriction $restriction, restricted_terms $restricted_terms')
-	// }
-
 	return Polynomials{
 		restriction:      restriction
 		restricted_terms: restricted_terms
@@ -272,8 +268,15 @@ fn complex_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32 {
 		mut terms := []f32{}
 		id1 := p1.get_interval(restriction[k])
 		if id1 != [-1] {
-			for term in p1.restricted_terms[id1[0]] {
-				terms << term
+			if id1.len == 1{
+				for term in p1.restricted_terms[id1[0]] {
+					terms << term
+				}
+			}
+			else{
+				for term in p1.restricted_terms[id1[1]] {
+					terms << term
+				}
 			}
 		}
 
@@ -303,6 +306,7 @@ fn complex_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32 {
 
 		restricted_terms << terms
 	}
+	
 	return restricted_terms
 }
 

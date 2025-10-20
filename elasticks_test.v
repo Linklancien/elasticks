@@ -91,7 +91,7 @@ fn test_polynomials_add() {
 		restricted_terms: [[f32(2), 1]]
 	}
 	p6 := Polynomials{
-		restriction:      [f32(0), 10]
+		restriction:      [f32(0), 15]
 		restricted_terms: [[f32(0)]]
 	}
 
