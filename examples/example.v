@@ -47,8 +47,8 @@ fn main() {
 
 	app.smd, _, app.mvt = rdm.solve_forces_solicitation(app.stick, forces)
 	println('All Example')
-	println(app.smd)
-	// println(app.mvt.uy)
+	println(app.smd.mfz)
+	println(app.mvt.uy)
 	app.ctx.run()
 }
 

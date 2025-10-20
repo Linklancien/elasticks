@@ -211,7 +211,7 @@ fn (pol Polynomials) integrate(cst f32) Polynomials {
 			mut new_terms := []f32{len: 1, init: cst}
 			for i, term in terms {
 				if i != 0 {
-					new_terms << term / i
+					new_terms << term / (i+1)
 				} else {
 					new_terms << term
 				}
