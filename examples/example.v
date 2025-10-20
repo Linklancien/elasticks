@@ -40,7 +40,7 @@ fn main() {
 	}
 	force2 := rdm.Force{
 		point: vec3[f32](app.stick.lenght, 0, 0)
-		f:     vec3[f32](0, 0, 0)
+		f:     vec3[f32](0, 0, 10)
 	}
 	forces := [force1, force2]
 
