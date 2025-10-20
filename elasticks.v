@@ -254,6 +254,11 @@ fn add(p1 Polynomials, p2 Polynomials) Polynomials {
 	restriction := union_interval(p1, p2)
 	restricted_terms := complex_add(p1, p2, restriction)
 
+
+	// if restriction == [f32(0.0), 5.0, 10.0]{
+	// 	panic('p1 $p1, p2 $p2, restriction $restriction, restricted_terms $restricted_terms')
+	// }
+
 	return Polynomials{
 		restriction:      restriction
 		restricted_terms: restricted_terms
@@ -291,8 +296,10 @@ fn complex_add(p1 Polynomials, p2 Polynomials, restriction []f32) [][]f32 {
 						terms[id_term] += term
 					}
 				}
+				
 			}
 		}
+
 
 		restricted_terms << terms
 	}
@@ -329,6 +336,10 @@ fn (pol Polynomials) extend(l f32) Polynomials {
 		restriction:      restriction
 		restricted_terms: restricted_terms
 	}
+}
+
+fn (p1 Polynomials) == (p2 Polynomials) bool{
+	return p1.restriction == p2.restriction && p1.restricted_terms == p2.restricted_terms
 }
 
 fn (pol Polynomials) get_abscise(nb int) []f32 {

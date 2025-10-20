@@ -76,14 +76,14 @@ fn test_polynomials_add() {
 	}
 
 	p4 := Polynomials{
-		restriction:      [f32(5), 10]
+		restriction:      [f32(5), 15]
 		restricted_terms: [[f32(2), 1]]
 	}
 	
 	sum34 := add(p3, p4)
 	sum43 := add(p4, p3)
 	assert sum34 == sum43, 'complex sum is not reversible ${sum34}, ${sum43}'
-	assert sum34.restriction == [f32(0), 5, 10], 'wrong complex restriction ${sum34}'
+	assert sum34.restriction == [f32(0), 5, 15], 'wrong complex restriction ${sum34}'
 	assert sum34.restricted_terms == [[f32(0), 1], [f32(2), 1]], 'wrong complex restricted_terms ${sum34}'
 
 	p5 := Polynomials{
@@ -113,10 +113,10 @@ fn test_polynomials_add() {
 	
 	sum78 := add(p7, p8)
 	sum87 := add(p8, p7)
-	panic(sum78)
-	assert sum78 == sum87, 'complex sum is not reversible ${sum78}, ${sum87}'
-	assert sum78.restricted_terms.len == 2, ' ${sum78}'
-	assert sum78.restricted_terms[1].len == 1, ' ${sum78}'
+	// panic('sum78: $sum78, sum87: $sum87')
+	assert sum78 == sum87, 'complex sum is not reversible \n sum78: ${sum78}, \n sum87: ${sum87}'
+	assert sum78.restricted_terms.len == 2, 'sum78 ${sum78}'
+	assert sum78.restricted_terms[1].len == 1, 'sum78 ${sum78}'
 }
 
 fn test_polynomials_value() {
