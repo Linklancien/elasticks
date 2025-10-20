@@ -349,7 +349,7 @@ fn (p1 Polynomials) == (p2 Polynomials) bool{
 	return p1.restriction == p2.restriction && p1.restricted_terms == p2.restricted_terms
 }
 
-fn (pol Polynomials) get_abscise(nb int) []f32 {
+pub fn (pol Polynomials) get_abscise(nb int) []f32 {
 	real_nb := nb - 2 * pol.restriction.len + 1
 	if pol.restriction == [f32(0.0), 0.0] {
 		return []f32{len: nb, init: f32(0)}
@@ -374,7 +374,7 @@ fn (pol Polynomials) get_abscise(nb int) []f32 {
 	return abscise
 }
 
-fn (pol Polynomials) get_values(nb int) []f32 {
+pub fn (pol Polynomials) get_values(nb int) []f32 {
 	real_nb := nb - 2 * pol.restriction.len + 1
 	if pol.restriction == [f32(0.0), 0.0] {
 		return []f32{len: nb, init: f32(0)}
@@ -504,6 +504,8 @@ pub fn get_smd(stick Stick_type, force Force) Shear_and_moment_diagram {
 	cstz := force.f.z
 
 	pos_x := force.point.x
+	pos_y := force.point.y
+	pos_z := force.point.z
 	res := [f32(0.0), force.point.x]
 
 	// Hypothesis of a straight beam
@@ -520,13 +522,17 @@ pub fn get_smd(stick Stick_type, force Force) Shear_and_moment_diagram {
 			restriction:      res
 			restricted_terms: [[cstz]]
 		}
+		mt: Polynomials{
+			restriction:      res
+			restricted_terms: [[pos_y *  cstz - pos_z * csty]]
+		}
 		mfy: Polynomials{
 			restriction:      res
-			restricted_terms: [[-pos_x * cstz, cstz]]
+			restricted_terms: [[pos_z * cstx - pos_x *  cstz, cstz]]
 		}
 		mfz: Polynomials{
 			restriction:      res
-			restricted_terms: [[pos_x * csty, -csty]]
+			restricted_terms: [[pos_x * csty - pos_y * cstx, -csty]]
 		}
 	}
 
@@ -540,7 +546,7 @@ fn get_constraints(stick Stick_type, smd Shear_and_moment_diagram) Constraints {
 fn get_deplacements(stick Stick_type, smd Shear_and_moment_diagram) Deplacements {
 	ux := smd.n.integrate(0).scalar_mult(stick.section.surface / stick.material.e).extend(stick.lenght)
 	uy := smd.mfz.integrate(0).integrate(0).scalar_mult(1 / (stick.material.e * stick.section.i_g_z)).extend(stick.lenght)
-	uz := smd.mfy.integrate(0).integrate(0).scalar_mult(-1 / (stick.material.e * stick.section.i_g_z)).extend(stick.lenght)
+	uz := smd.mfy.integrate(0).integrate(0).scalar_mult(-1 / (stick.material.e * stick.section.i_g_y)).extend(stick.lenght)
 	return Deplacements{
 		ux: ux
 		uy: uy
@@ -553,13 +559,12 @@ fn get_deplacements(stick Stick_type, smd Shear_and_moment_diagram) Deplacements
 }
 
 // C: Graph using gg
-pub fn render_all_graph(ctx gg.Context, smd Shear_and_moment_diagram, mvt Deplacements, stick Stick_type) {
+pub fn render_all_graph(ctx gg.Context, smd Shear_and_moment_diagram, mvt Deplacements, stick Stick_type, nb int) {
 	dec := 50
 	mut x := dec
 	mut y := dec / 2
 	w := 500
 	h := 100
-	nb := 2000
 	// left
 	// n
 	abscise := smd.n.get_abscise(nb)
@@ -597,7 +602,7 @@ pub fn render_all_graph(ctx gg.Context, smd Shear_and_moment_diagram, mvt Deplac
 	render_graph(ctx, x, y, w, h, abscise, value, 'uz en mm')
 }
 
-fn render_graph(ctx gg.Context, x f32, y f32, w f32, h f32, abscise []f32, value []f32, name string) {
+pub fn render_graph(ctx gg.Context, x f32, y f32, w f32, h f32, abscise []f32, value []f32, name string) {
 	max := max(value) or { panic('No max value') }
 	min := min(value) or { panic('No min value') }
 	max_a := max(abscise) or { panic('No max abscise') }

@@ -11,7 +11,7 @@ mut:
 }
 
 fn main() {
-	d := 2
+	d := 10
 	re := 1
 	e := 2
 
@@ -22,6 +22,7 @@ fn main() {
 			material: rdm.Material.simple(re, e)
 		}
 	}
+	println(app.stick)
 	app.ctx = gg.new_context(
 		fullscreen:    false
 		width:         100 * 17
@@ -40,19 +41,23 @@ fn main() {
 	}
 	force2 := rdm.Force{
 		point: vec3[f32](app.stick.lenght, 0, 0)
-		f:     vec3[f32](0, 0, 10)
+		f:     vec3[f32](0, 0, 0)
 	}
 	forces := [force1, force2]
 
 	app.smd, _, app.mvt = rdm.solve_forces_solicitation(app.stick, forces)
 	println('All Example')
-	// println(app.smd)
-	println(app.mvt.uy)
+	println(app.smd)
+	// println(app.mvt.uy)
 	app.ctx.run()
 }
 
 fn on_frame(mut app App) {
+	nb := 2000
 	app.ctx.begin()
-	rdm.render_all_graph(app.ctx, app.smd, app.mvt, app.stick)
+	// rdm.render_all_graph(app.ctx, app.smd, app.mvt, app.stick, nb)
+	abscise := app.mvt.uy.get_abscise(nb)
+	value := app.mvt.uy.get_values(nb)
+	rdm.render_graph(app.ctx, 20, 20, 1200, 600, abscise, value, 'uy en mm')
 	app.ctx.end()
 }
